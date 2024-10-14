@@ -32,7 +32,7 @@ if __name__ == "__main__":
 
     w3 = Web3(Web3.HTTPProvider(os.environ.get('RPC_ENDPOINT')))
     operator = w3.eth.account.from_key(os.environ.get('PRIVATE_KEY'))
-    w3.middleware_onion.add(construct_sign_and_send_raw_middleware(operator))
+    #w3.middleware_onion.add(construct_sign_and_send_raw_middleware(operator))
     #w3.eth.default_account = operator.address
 
     print(f"Operator address: {operator.address}")
