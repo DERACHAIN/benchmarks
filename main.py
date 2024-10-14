@@ -1,7 +1,7 @@
 import os
 from web3 import Web3
 from eth_account import Account
-from web3.middleware.signing import construct_sign_and_send_raw_middleware
+#from web3.middleware.signing import construct_sign_and_send_raw_middleware
 import json
 import logging
 
