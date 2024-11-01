@@ -2,9 +2,9 @@ from library import Singleton
 from eth_account import Account
 import json
 
-# class WalletGenerator(metaclass=Singleton):
-#     def __init__(self):
-#         self.wallets = []
+class WalletGenerator(metaclass=Singleton):
+    def __init__(self):
+        self.wallets = []
 
 #     def generate_ethereum_wallets(self, num_wallets):
 #         wallets = []
