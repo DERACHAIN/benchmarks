@@ -8,7 +8,7 @@ class WalletGenerator(metaclass=Singleton):
 
     def generate_ethereum_wallets(self, num_wallets):
         wallets = []
-#         for _ in range(num_wallets):
+        for _ in range(num_wallets):
 #             account = Account.create()
 #             wallets.append({
 #                 'address': account.address,
