@@ -12,13 +12,13 @@ class WalletGenerator(metaclass=Singleton):
             account = Account.create()
             wallets.append({
                 'address': account.address,
-#                 'private_key': account.key.hex()
-#             })
-#         return wallets
+                'private_key': account.key.hex()
+            })
+        return wallets
     
-#     def save_wallets_to_file(self, wallets, filename='wallets.json'):
-#         with open(filename, 'w') as file:
-#             json.dump(wallets, file, indent=4)
+    def save_wallets_to_file(self, wallets, filename='wallets.json'):
+        with open(filename, 'w') as file:
+            json.dump(wallets, file, indent=4)
 
 #     def generate_wallets(self):
 #         num_wallets = int(input("Enter the number of Ethereum wallets to generate: "))
