@@ -6,20 +6,27 @@ import json
 import logging
 
 from generator import WalletGenerator
-from executor import NativeTransferExecutor
+from executor import NativeTransferExecutor, Bootstrapper
 
 if __name__ == "__main__":
     from dotenv import load_dotenv
     load_dotenv()
     logging.basicConfig(level=logging.INFO)
 
+    # create wallets
     #generate_wallets()
     #wg = WalletGenerator()
     #wg.generate_wallets()
 
-    nativeTransferExecutor = NativeTransferExecutor(os.environ.get('RPC_ENDPOINT'), os.environ.get('PRIVATE_KEY'), 1)
+    # bootstrap
+    bootstrapper = Bootstrapper(os.environ.get('RPC_ENDPOINT'), os.environ.get('PRIVATE_KEY'), 1)
+    # with open('wallets.json') as file:
+    #     wallets = json.load(file)
+    #     for wallet in wallets:
+    #         bootstrapper.execute({'to': wallet['address']})
 
+    # native transfer
     with open('wallets.json') as file:
         wallets = json.load(file)
-        for wallet in wallets:
-            nativeTransferExecutor.execute({'to': wallet['address']})
+        executor = NativeTransferExecutor(os.environ.get('RPC_ENDPOINT'), os.environ.get('PRIVATE_KEY'), wallets)
+        executor.execute({'amount': 0.01})
