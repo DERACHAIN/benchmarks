@@ -25,7 +25,7 @@ class NativeTransferExecutor(BaseExecutor):
         def transfer(wallet, index):
             account = self.wallets[index]
             to = self.wallets[(index + 1) % len(self.wallets)]
-            self.logger.info(f"Transfer {self.amount} from {account.address} to {to.address}")
+            #self.logger.info(f"Transfer {self.amount} from {account.address} to {to.address}")
 
             #account = self.w3.eth.account.from_key(wallet['private_key'])
             #self.logger.info(f"Account: {account.address} with nonce {self.w3.eth.get_transaction_count(account.address)}")
@@ -54,12 +54,12 @@ class NativeTransferExecutor(BaseExecutor):
                 for future in concurrent.futures.as_completed(futures):
                     try:
                         result = future.result()
-                        self.logger.info(f"Transfer result: {result}")
+                        #self.logger.info(f"Transfer result: {result}")
                         self.total_tx -= 1
                     except Exception as e:
                         self.logger.error(f"Transfer failed: {e}")
                         self.total_tx -= 1
         end_time = time.strftime('%Y-%m-%d %H:%M:%S', time.localtime())
         elapsed_time = time.time() - time.mktime(time.strptime(start_time, '%Y-%m-%d %H:%M:%S'))        
-        self.logger.warning(f"Transfer execution ended at {end_time}") 
+        self.logger.warning(f"Transfer execution ended at {end_time}")
         self.logger.warning(f"Complete {tx_number} tx in {elapsed_time:.3f} seconds")
