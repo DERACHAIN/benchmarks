@@ -55,4 +55,5 @@ class NativeTransferExecutor(BaseExecutor):
                         self.logger.error(f"Transfer failed: {e}")
                         self.total_tx -= 1
         end_time = time.strftime('%Y-%m-%d %H:%M:%S', time.localtime())
-        self.logger.warning(f"Transfer execution ended at {end_time} duration is {time.time() - time.mktime(time.strptime(start_time, '%Y-%m-%d %H:%M:%S'))} seconds")
+        elapsed_time = time.time() - time.mktime(time.strptime(start_time, '%Y-%m-%d %H:%M:%S'))        
+        self.logger.warning(f"Transfer execution ended at {end_time} duration is {elapsed_time:.3f} seconds")
