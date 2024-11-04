@@ -36,7 +36,8 @@ class NativeTransferExecutor(BaseExecutor):
             }, account._private_key)
 
             tx_hash = self.w3.eth.send_raw_transaction(signed.raw_transaction)
-            return f"Transfer {self.amount} from {wallet['address']} to {to} with tx hash {tx_hash.hex()}"
+            tx_receipt = self.w3.eth.wait_for_transaction_receipt(tx_hash)
+            return f"Transfer {self.amount} from {wallet['address']} to {to} with tx hash {tx_hash.hex()} status {tx_receipt['status']}"
 
         with concurrent.futures.ThreadPoolExecutor(max_workers=len(self.wallets)) as executor:
             while self.total_tx > 0:
