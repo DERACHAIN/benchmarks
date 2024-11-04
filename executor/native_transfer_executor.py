@@ -6,11 +6,12 @@ from web3.middleware import ExtraDataToPOAMiddleware
 from executor import BaseExecutor
 
 class NativeTransferExecutor(BaseExecutor):
-    def __init__(self, rpc, operator_sk, wallets):
+    def __init__(self, rpc, operator_sk, wallets, total_tx=10**5):
         super().__init__(rpc, operator_sk)
         self.w3 = Web3(Web3.HTTPProvider(rpc))
         self.w3.middleware_onion.inject(ExtraDataToPOAMiddleware, layer=0)
         self.wallets = wallets
+        self.total_tx = total_tx
 
     def execute(self, data):
         self.amount = data['amount']
@@ -28,7 +29,7 @@ class NativeTransferExecutor(BaseExecutor):
                 'from': wallet['address'],
                 'to': to,
                 'value': self.w3.to_wei(self.amount, 'ether'),
-                'gas': 23000,
+                'gas': 21000,
                 'gasPrice': self.w3.to_wei('50', 'gwei'),
                 'nonce': self.w3.eth.get_transaction_count(account.address),
                 'chainId': self.w3.eth.chain_id,
@@ -38,10 +39,14 @@ class NativeTransferExecutor(BaseExecutor):
             return f"Transfer {self.amount} from {wallet['address']} to {to} with tx hash {tx_hash.hex()}"
 
         with concurrent.futures.ThreadPoolExecutor(max_workers=len(self.wallets)) as executor:
-            futures = [executor.submit(transfer, wallet, index) for index, wallet in enumerate(self.wallets)]
-            for future in concurrent.futures.as_completed(futures):
-                try:
-                    result = future.result()
-                    self.logger.info(f"Transfer result: {result}")
-                except Exception as e:
-                    self.logger.error(f"Transfer failed: {e}")
+            if self.total_tx > 0:
+                self.logger.warning(f"Total transactions remained: {self.total_tx}")
+                futures = [executor.submit(transfer, wallet, index) for index, wallet in enumerate(self.wallets)]
+                for future in concurrent.futures.as_completed(futures):
+                    try:
+                        result = future.result()
+                        self.logger.info(f"Transfer result: {result}")
+                        self.total_tx -= 1
+                    except Exception as e:
+                        self.logger.error(f"Transfer failed: {e}")
+                        self.total_tx -= 1
