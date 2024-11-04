@@ -28,5 +28,5 @@ if __name__ == "__main__":
     # native transfer
     with open('wallets.json') as file:
         wallets = json.load(file)
-        executor = NativeTransferExecutor(os.environ.get('RPC_ENDPOINT'), os.environ.get('PRIVATE_KEY'), wallets[:300], 10000)
+        executor = NativeTransferExecutor(os.environ.get('RPC_ENDPOINT'), os.environ.get('PRIVATE_KEY'), wallets[:200], 10000)
         executor.execute({'amount': 0.01})
