@@ -18,3 +18,5 @@ supervisord.pid
 
 # others
 wallets.json
+
+logs.txt
