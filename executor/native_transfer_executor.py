@@ -4,6 +4,7 @@ from web3 import Web3
 from web3.middleware import ExtraDataToPOAMiddleware
 
 from executor import BaseExecutor
+import time
 
 class NativeTransferExecutor(BaseExecutor):
     def __init__(self, rpc, operator_sk, wallets, total_tx=10**5):
@@ -39,6 +40,8 @@ class NativeTransferExecutor(BaseExecutor):
             tx_receipt = self.w3.eth.wait_for_transaction_receipt(tx_hash)
             return f"Transfer {self.amount} from {wallet['address']} to {to} with tx hash {tx_hash.hex()} status {tx_receipt['status']}"
 
+        start_time = time.strftime('%Y-%m-%d %H:%M:%S', time.localtime())
+        self.logger.warning(f"Transfer execution started at {start_time}")
         with concurrent.futures.ThreadPoolExecutor(max_workers=len(self.wallets)) as executor:
             while self.total_tx > 0:
                 self.logger.warning(f"Total transactions remained: {self.total_tx}")
@@ -51,3 +54,5 @@ class NativeTransferExecutor(BaseExecutor):
                     except Exception as e:
                         self.logger.error(f"Transfer failed: {e}")
                         self.total_tx -= 1
+        end_time = time.strftime('%Y-%m-%d %H:%M:%S', time.localtime())
+        self.logger.warning(f"Transfer execution ended at {end_time} duration is {time.time() - time.mktime(time.strptime(start_time, '%Y-%m-%d %H:%M:%S'))} seconds")
