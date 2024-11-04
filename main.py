@@ -32,3 +32,5 @@ if __name__ == "__main__":
             wallets = json.load(file)
             executor = NativeTransferExecutor(os.environ.get('RPC_ENDPOINT'), os.environ.get('PRIVATE_KEY'), wallets[:1000], 10**6)
             executor.execute({'amount': 0.01})
+    
+    logging.info(f"Action {args.action} completed")
