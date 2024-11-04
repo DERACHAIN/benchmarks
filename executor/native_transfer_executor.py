@@ -39,7 +39,7 @@ class NativeTransferExecutor(BaseExecutor):
             return f"Transfer {self.amount} from {wallet['address']} to {to} with tx hash {tx_hash.hex()}"
 
         with concurrent.futures.ThreadPoolExecutor(max_workers=len(self.wallets)) as executor:
-            if self.total_tx > 0:
+            while self.total_tx > 0:
                 self.logger.warning(f"Total transactions remained: {self.total_tx}")
                 futures = [executor.submit(transfer, wallet, index) for index, wallet in enumerate(self.wallets)]
                 for future in concurrent.futures.as_completed(futures):
