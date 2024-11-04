@@ -17,6 +17,6 @@ __pycache__/
 supervisord.pid
 
 # others
-wallets.json
+wallets*.json
 
 logs.txt
