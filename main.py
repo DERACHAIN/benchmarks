@@ -11,7 +11,8 @@ from executor import NativeTransferExecutor, Bootstrapper
 if __name__ == "__main__":
     from dotenv import load_dotenv
     load_dotenv()
-    logging.basicConfig(level=logging.INFO)
+    logging.basicConfig(filename='logs.txt', level=logging.INFO, 
+                        format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
 
     # create wallets
     #generate_wallets()
