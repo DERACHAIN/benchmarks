@@ -50,6 +50,11 @@ class NativeTransferExecutor(BaseExecutor):
         with concurrent.futures.ThreadPoolExecutor(max_workers=len(self.wallets)) as executor:
             while self.total_tx > 0:
                 self.logger.warning(f"Total transactions remained: {self.total_tx}")
+                if tx_number - self.total_tx > 0:
+                    elapsed_time = time.time() - time.mktime(time.strptime(start_time, '%Y-%m-%d %H:%M:%S'))
+                    self.logger.warning(f"Complete {len(self.wallets)} tx. Elapsed time: {elapsed_time:.3f} seconds")
+                    start_time = time.strftime('%Y-%m-%d %H:%M:%S', time.localtime())
+
                 futures = [executor.submit(transfer, wallet, index) for index, wallet in enumerate(self.wallets)]
                 for future in concurrent.futures.as_completed(futures):
                     try:
@@ -60,6 +65,6 @@ class NativeTransferExecutor(BaseExecutor):
                         self.logger.error(f"Transfer failed: {e}")
                         self.total_tx -= 1
         end_time = time.strftime('%Y-%m-%d %H:%M:%S', time.localtime())
-        elapsed_time = time.time() - time.mktime(time.strptime(start_time, '%Y-%m-%d %H:%M:%S'))        
+        elapsed_time = time.time() - time.mktime(time.strptime(start_time, '%Y-%m-%d %H:%M:%S'))
         self.logger.warning(f"Transfer execution ended at {end_time}")
         self.logger.warning(f"Complete {tx_number} tx in {elapsed_time:.3f} seconds")
