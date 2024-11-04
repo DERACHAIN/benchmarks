@@ -40,6 +40,7 @@ class NativeTransferExecutor(BaseExecutor):
             tx_receipt = self.w3.eth.wait_for_transaction_receipt(tx_hash)
             return f"Transfer {self.amount} from {wallet['address']} to {to} with tx hash {tx_hash.hex()} status {tx_receipt['status']}"
 
+        tx_number = self.total_tx
         start_time = time.strftime('%Y-%m-%d %H:%M:%S', time.localtime())
         self.logger.warning(f"Transfer execution started at {start_time}")
         with concurrent.futures.ThreadPoolExecutor(max_workers=len(self.wallets)) as executor:
@@ -56,4 +57,5 @@ class NativeTransferExecutor(BaseExecutor):
                         self.total_tx -= 1
         end_time = time.strftime('%Y-%m-%d %H:%M:%S', time.localtime())
         elapsed_time = time.time() - time.mktime(time.strptime(start_time, '%Y-%m-%d %H:%M:%S'))        
-        self.logger.warning(f"Transfer execution ended at {end_time} duration is {elapsed_time:.3f} seconds")
+        self.logger.warning(f"Transfer execution ended at {end_time}") 
+        self.logger.warning(f"Complete {tx_number} tx in {elapsed_time:.3f} seconds")
