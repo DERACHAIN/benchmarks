@@ -11,8 +11,11 @@ class NativeTransferExecutor(BaseExecutor):
         super().__init__(rpc, operator_sk)
         self.w3 = Web3(Web3.HTTPProvider(rpc))
         self.w3.middleware_onion.inject(ExtraDataToPOAMiddleware, layer=0)
-        self.wallets = wallets
+        self.wallets = [self.create_wallet(wallet) for wallet in wallets]
         self.total_tx = total_tx
+
+    def create_wallet(self, wallet):
+        return self.w3.eth.account.from_key(wallet['private_key'])
 
     def execute(self, data):
         self.amount = data['amount']
@@ -20,17 +23,18 @@ class NativeTransferExecutor(BaseExecutor):
         import concurrent.futures
 
         def transfer(wallet, index):
-            to = self.wallets[(index + 1) % len(self.wallets)]['address']
-            self.logger.info(f"Transfer {self.amount} from {wallet['address']} to {to}")
+            account = self.wallets[index]
+            to = self.wallets[(index + 1) % len(self.wallets)]
+            self.logger.info(f"Transfer {self.amount} from {account.address} to {to.address}")
 
-            account = self.w3.eth.account.from_key(wallet['private_key'])
+            #account = self.w3.eth.account.from_key(wallet['private_key'])
             #self.logger.info(f"Account: {account.address} with nonce {self.w3.eth.get_transaction_count(account.address)}")
 
             signed = self.w3.eth.account.sign_transaction({
-                'from': wallet['address'],
-                'to': to,
+                'from': account.address,
+                'to': to.address,
                 'value': self.w3.to_wei(self.amount, 'ether'),
-                'gas': 21000,
+                'gas': 23000,
                 'gasPrice': self.w3.to_wei('50', 'gwei'),
                 'nonce': self.w3.eth.get_transaction_count(account.address),
                 'chainId': self.w3.eth.chain_id,
@@ -38,7 +42,7 @@ class NativeTransferExecutor(BaseExecutor):
 
             tx_hash = self.w3.eth.send_raw_transaction(signed.raw_transaction)
             tx_receipt = self.w3.eth.wait_for_transaction_receipt(tx_hash)
-            return f"Transfer {self.amount} from {wallet['address']} to {to} with tx hash {tx_hash.hex()} status {tx_receipt['status']}"
+            return f"Transfer {self.amount} from {account.address} to {to.address} with tx hash {tx_hash.hex()} status {tx_receipt['status']}"
 
         tx_number = self.total_tx
         start_time = time.strftime('%Y-%m-%d %H:%M:%S', time.localtime())
