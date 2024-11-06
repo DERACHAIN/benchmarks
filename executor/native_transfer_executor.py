@@ -15,7 +15,7 @@ class NativeTransferExecutor(BaseExecutor):
         self.total_tx = total_tx
 
     def create_wallet(self, wallet):
-#         return self.w3.eth.account.from_key(wallet['private_key'])
+        return self.w3.eth.account.from_key(wallet['private_key'])
 
 #     def execute(self, data):
 #         self.amount = data['amount']
