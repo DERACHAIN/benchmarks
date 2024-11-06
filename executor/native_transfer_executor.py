@@ -12,7 +12,7 @@ class NativeTransferExecutor(BaseExecutor):
         self.w3 = Web3(Web3.HTTPProvider(rpc))
         self.w3.middleware_onion.inject(ExtraDataToPOAMiddleware, layer=0)
         self.wallets = [self.create_wallet(wallet) for wallet in wallets]
-#         self.total_tx = total_tx
+        self.total_tx = total_tx
 
 #     def create_wallet(self, wallet):
 #         return self.w3.eth.account.from_key(wallet['private_key'])
