@@ -8,7 +8,7 @@ import time
 
 class NativeTransferExecutor(BaseExecutor):
     def __init__(self, rpc, operator_sk, wallets, total_tx=10**5):
-#         super().__init__(rpc, operator_sk)
+        super().__init__(rpc, operator_sk)
 #         self.w3 = Web3(Web3.HTTPProvider(rpc))
 #         self.w3.middleware_onion.inject(ExtraDataToPOAMiddleware, layer=0)
 #         self.wallets = [self.create_wallet(wallet) for wallet in wallets]
