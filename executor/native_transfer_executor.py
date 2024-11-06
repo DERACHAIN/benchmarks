@@ -7,7 +7,7 @@ from executor import BaseExecutor
 import time
 
 class NativeTransferExecutor(BaseExecutor):
-#     def __init__(self, rpc, operator_sk, wallets, total_tx=10**5):
+    def __init__(self, rpc, operator_sk, wallets, total_tx=10**5):
 #         super().__init__(rpc, operator_sk)
 #         self.w3 = Web3(Web3.HTTPProvider(rpc))
 #         self.w3.middleware_onion.inject(ExtraDataToPOAMiddleware, layer=0)
