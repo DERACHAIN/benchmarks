@@ -5,12 +5,18 @@ from web3.middleware import ExtraDataToPOAMiddleware
 
 from executor import BaseExecutor
 import time
+import random
 
-class NativeTransferExecutor(BaseExecutor):
-    def __init__(self, rpc, operator_sk, wallets, total_tx=10**5):
+class TransferExecutor(BaseExecutor):
+    def __init__(self, rpc, operator_sk, erc20_address, erc721_address, erc20_abi, erc721_abi, wallets, total_tx=10**5):
         super().__init__(rpc, operator_sk)
+        
         self.w3 = Web3(Web3.HTTPProvider(rpc))
         self.w3.middleware_onion.inject(ExtraDataToPOAMiddleware, layer=0)
+
+        self.erc20 = self.w3.eth.contract(address=Web3.toChecksumAddress(erc20_address), abi=erc20_abi)
+        self.erc721 = self.w3.eth.contract(address=Web3.toChecksumAddress(erc721_address), abi=erc721_abi)
+
         self.wallets = [self.create_wallet(wallet) for wallet in wallets]
         self.total_tx = total_tx
 
@@ -29,18 +35,44 @@ class NativeTransferExecutor(BaseExecutor):
             #account = self.w3.eth.account.from_key(wallet['private_key'])
             #self.logger.info(f"Account: {account.address} with nonce {self.w3.eth.get_transaction_count(account.address)}")
 
+            random_value = random.randint(1, 3)
+            self.logger.info(f"Random value: {random_value}")
+
             signed = self.w3.eth.account.sign_transaction({
                 'from': account.address,
                 'to': to.address,
                 'value': self.w3.to_wei(self.amount, 'ether'),
                 'gas': 23000,
-                'gasPrice': self.w3.to_wei('50', 'gwei'),
+                'gasPrice': self.w3.to_wei('35', 'gwei'),
                 'nonce': self.w3.eth.get_transaction_count(account.address),
                 'chainId': self.w3.eth.chain_id,
             }, account._private_key)
 
+            if random_value == 2:
+                tx = self.erc20.functions.transfer(to.address, self.w3.to_wei(self.amount, 'ether')).buildTransaction({
+                    'from': account.address,
+                    'nonce': self.w3.eth.get_transaction_count(account.address),
+                    'gas': 100000,
+                    'gasPrice': self.w3.to_wei('35', 'gwei'),
+                })
+                signed = self.w3.eth.account.sign_transaction(tx, account._private_key)
+            elif random_value == 3:
+                tx = self.erc721.functions.mint().buildTransaction({
+                    'from': account.address,
+                    'nonce': self.w3.eth.get_transaction_count(account.address),
+                    'gas': 100000,
+                    'gasPrice': self.w3.to_wei('35', 'gwei'),
+                })
+                signed = self.w3.eth.account.sign_transaction(tx, account._private_key)
+
             tx_hash = self.w3.eth.send_raw_transaction(signed.raw_transaction)
             tx_receipt = self.w3.eth.wait_for_transaction_receipt(tx_hash)
+
+            if random_value == 2:
+                return f"Transfer {self.amount} ERC20 from {account.address} to {to.address} with tx hash {tx_hash.hex()} status {tx_receipt['status']}"
+            elif random_value == 3:
+                return f"Mint NFT to {account.address} with tx hash {tx_hash.hex()} status {tx_receipt['status']}"
+            
             return f"Transfer {self.amount} from {account.address} to {to.address} with tx hash {tx_hash.hex()} status {tx_receipt['status']}"
 
         tx_number = self.total_tx
@@ -58,11 +90,12 @@ class NativeTransferExecutor(BaseExecutor):
                 for future in concurrent.futures.as_completed(futures):
                     try:
                         result = future.result()
-                        #self.logger.info(f"Transfer result: {result}")
+                        self.logger.info(f"Transfer result: {result}")
                         self.total_tx -= 1
                     except Exception as e:
                         self.logger.error(f"Transfer failed: {e}")
                         self.total_tx -= 1
+
         end_time = time.strftime('%Y-%m-%d %H:%M:%S', time.localtime())
         elapsed_time = time.time() - time.mktime(time.strptime(start_time, '%Y-%m-%d %H:%M:%S'))
         self.logger.warning(f"Transfer execution ended at {end_time}")

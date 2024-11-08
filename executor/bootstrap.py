@@ -4,18 +4,32 @@ import logging
 from executor import BaseExecutor
 
 class Bootstrapper(BaseExecutor):
-    def __init__(self, rpc, operator_sk, amount):
+    def __init__(self, rpc, operator_sk):
         super().__init__(rpc, operator_sk)
-        self.amount = amount
 
     def execute(self, data):
-        self.logger.info(f"Sending {self.amount} to {data['to']}")
+        self.logger.info(f"Bootstrapping {data}")
+        if data['type'] == 'native':
+            return self.fund_native(data['to'], data['amount'])
+        elif data['type'] == 'erc20':
+            return self.fund_erc20(data['to'], data['amount'])
+            
+    def fund_native(self, to, amount):
+        self.logger.info(f"Sending {amount} to {to}")
 
         tx = self.w3.eth.send_transaction({
             'from': self.operator.address,
-            'to': data['to'],
-            'value': self.w3.to_wei(self.amount, 'ether')
+            'to': to,
+            'value': self.w3.to_wei(amount, 'ether')
         })
+        tx_receipt=self.w3.eth.wait_for_transaction_receipt(tx)
+        self.logger.info(f"Transaction hash: {tx_receipt['transactionHash'].hex()} Status {tx_receipt['status']}")
+        return tx
+    
+    def fund_erc20(self, to, amount):
+        self.logger.info(f"Sending {amount} to {to}")
+
+        tx = self.erc20.functions.transfer(to, self.w3.to_wei(amount, 'ether')).transact()
         tx_receipt=self.w3.eth.wait_for_transaction_receipt(tx)
         self.logger.info(f"Transaction hash: {tx_receipt['transactionHash'].hex()} Status {tx_receipt['status']}")
         return tx

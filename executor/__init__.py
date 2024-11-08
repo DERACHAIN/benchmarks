@@ -1,3 +1,3 @@
 from executor.base_executor import BaseExecutor
 from executor.bootstrap import Bootstrapper
-from executor.native_transfer_executor import NativeTransferExecutor
+from executor.transfer_executor import TransferExecutor
