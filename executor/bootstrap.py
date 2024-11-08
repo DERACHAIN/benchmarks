@@ -1,11 +1,13 @@
 import os
 import logging
+from web3 import Web3
 
 from executor import BaseExecutor
 
 class Bootstrapper(BaseExecutor):
-    def __init__(self, rpc, operator_sk):
+    def __init__(self, rpc, operator_sk, erc20_address, erc20_abi):
         super().__init__(rpc, operator_sk)
+        self.erc20 = self.w3.eth.contract(address=Web3.toChecksumAddress(erc20_address), abi=erc20_abi)
 
     def execute(self, data):
         self.logger.info(f"Bootstrapping {data}")

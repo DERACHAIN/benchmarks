@@ -28,7 +28,11 @@ if __name__ == "__main__":
         wg = WalletGenerator()
         wg.generate_wallets()
     elif args.action == 'bootstrap':        
-        bootstrapper = Bootstrapper(os.environ.get('RPC_ENDPOINT'), os.environ.get('PRIVATE_KEY'))
+        bootstrapper = Bootstrapper(os.environ.get('RPC_ENDPOINT'), 
+                                    os.environ.get('PRIVATE_KEY'),
+                                    os.environ.get('ERC20_ADDRESS'),
+                                    load_abi(f"{os.path.dirname(__file__)}/abis/erc20.json"),
+                                    )
         with open('wallets.json') as file:
             wallets = json.load(file)
             for wallet in wallets:
