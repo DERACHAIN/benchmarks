@@ -9,9 +9,14 @@ import random
 
 class TransferExecutor(BaseExecutor):
     def __init__(self, rpc, operator_sk, erc20_address, erc721_address, erc20_abi, erc721_abi, wallets, total_tx=10**5):
-        super().__init__(rpc, operator_sk, erc20_address, erc721_address, erc20_abi, erc721_abi)
+        super().__init__(rpc, operator_sk)
+        
         self.w3 = Web3(Web3.HTTPProvider(rpc))
         self.w3.middleware_onion.inject(ExtraDataToPOAMiddleware, layer=0)
+
+        self.erc20 = self.w3.eth.contract(address=Web3.toChecksumAddress(erc20_address), abi=erc20_abi)
+        self.erc721 = self.w3.eth.contract(address=Web3.toChecksumAddress(erc721_address), abi=erc721_abi)
+
         self.wallets = [self.create_wallet(wallet) for wallet in wallets]
         self.total_tx = total_tx
 

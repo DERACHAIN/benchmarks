@@ -12,7 +12,7 @@ class Bootstrapper(BaseExecutor):
         if data['type'] == 'native':
             return self.fund_native(data['to'], data['amount'])
         elif data['type'] == 'erc20':
-            return self.fund(data)
+            return self.fund_erc20(data['to'], data['amount'])
             
     def fund_native(self, to, amount):
         self.logger.info(f"Sending {amount} to {to}")
@@ -20,7 +20,7 @@ class Bootstrapper(BaseExecutor):
         tx = self.w3.eth.send_transaction({
             'from': self.operator.address,
             'to': to,
-            'value': self.w3.to_wei(self.amount, 'ether')
+            'value': self.w3.to_wei(amount, 'ether')
         })
         tx_receipt=self.w3.eth.wait_for_transaction_receipt(tx)
         self.logger.info(f"Transaction hash: {tx_receipt['transactionHash'].hex()} Status {tx_receipt['status']}")
@@ -29,4 +29,7 @@ class Bootstrapper(BaseExecutor):
     def fund_erc20(self, to, amount):
         self.logger.info(f"Sending {amount} to {to}")
 
-        tx = self.erc20_contract.functions.transfer(to, amount).transact({'from': self.operator.address})
+        tx = self.erc20.functions.transfer(to, self.w3.to_wei(amount, 'ether')).transact()
+        tx_receipt=self.w3.eth.wait_for_transaction_receipt(tx)
+        self.logger.info(f"Transaction hash: {tx_receipt['transactionHash'].hex()} Status {tx_receipt['status']}")
+        return tx

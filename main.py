@@ -11,14 +11,16 @@ from helpers import load_abi
 if __name__ == "__main__":
     from dotenv import load_dotenv
     load_dotenv()
-    logging.basicConfig(filename='logs.txt', level=logging.INFO, 
-                        format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+    # logging.basicConfig(filename='logs.txt', level=logging.INFO, 
+    #                     format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+    logging.basicConfig(level=logging.INFO)
     
     parser = argparse.ArgumentParser(description='Benchmark bot.')    
     parser.add_argument('-a', '--action', type=str, help="Actions: generate_wallets | bootstrap | native_transfer")
+    parser.add_argument('-t', '--type', type=str, help="Actions: native | erc20", default='native')
     parser.add_argument('-b', '--balance', type=float, help="Initial balance of wallets", default=10)
     parser.add_argument('-n', '--number', type=int, help="Number of wallets", default=100)
-    parser.add_argument('-t', '--tx', type=int, help="Number of tx", default=10**6)
+    parser.add_argument('-tx', '--tx', type=int, help="Number of tx", default=10**6)
 
     args = parser.parse_args()
 
@@ -26,11 +28,11 @@ if __name__ == "__main__":
         wg = WalletGenerator()
         wg.generate_wallets()
     elif args.action == 'bootstrap':        
-        bootstrapper = Bootstrapper(os.environ.get('RPC_ENDPOINT'), os.environ.get('PRIVATE_KEY'), args.balance)
+        bootstrapper = Bootstrapper(os.environ.get('RPC_ENDPOINT'), os.environ.get('PRIVATE_KEY'))
         with open('wallets.json') as file:
             wallets = json.load(file)
             for wallet in wallets:
-                bootstrapper.execute({'to': wallet['address']})
+                bootstrapper.execute({'type': args.type, 'to': wallet['address'], 'amount': args.balance})
     elif args.action == 'native_transfer':        
         with open('wallets.json') as file:
             wallets = json.load(file)
