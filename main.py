@@ -16,7 +16,7 @@ if __name__ == "__main__":
     logging.basicConfig(level=logging.INFO)
     
     parser = argparse.ArgumentParser(description='Benchmark bot.')    
-    parser.add_argument('-a', '--action', type=str, help="Actions: generate_wallets | bootstrap | native_transfer")
+    parser.add_argument('-a', '--action', type=str, help="Actions: generate_wallets | bootstrap | transfer")
     parser.add_argument('-t', '--type', type=str, help="Actions: native | erc20", default='native')
     parser.add_argument('-b', '--balance', type=float, help="Initial balance of wallets", default=10)
     parser.add_argument('-n', '--number', type=int, help="Number of wallets", default=100)
@@ -37,7 +37,7 @@ if __name__ == "__main__":
             wallets = json.load(file)
             for wallet in wallets:
                 bootstrapper.execute({'type': args.type, 'to': wallet['address'], 'amount': args.balance})
-    elif args.action == 'native_transfer':        
+    elif args.action == 'transfer':        
         with open('wallets.json') as file:
             wallets = json.load(file)
             executor = TransferExecutor(os.environ.get('RPC_ENDPOINT'),
@@ -48,6 +48,6 @@ if __name__ == "__main__":
                                         load_abi(f"{os.path.dirname(__file__)}/abis/erc721.json"),
                                         wallets[:args.number],
                                         args.tx)
-            executor.execute({'type': 'native', 'amount': 0.01})
+            executor.execute({'amount_native': 0.01, 'amount_erc20': 10})
     
     logging.info(f"Action {args.action} completed")

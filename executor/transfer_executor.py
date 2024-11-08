@@ -23,25 +23,21 @@ class TransferExecutor(BaseExecutor):
     def create_wallet(self, wallet):
         return self.w3.eth.account.from_key(wallet['private_key'])
 
-    def execute(self, data):
-        self.amount = data['amount']
+    def execute(self, data):        
 
         import concurrent.futures
 
         def transfer(wallet, index):
             account = self.wallets[index]
             to = self.wallets[(index + 1) % len(self.wallets)]
-            #self.logger.info(f"Transfer {self.amount} from {account.address} to {to.address}")
-            #account = self.w3.eth.account.from_key(wallet['private_key'])
-            #self.logger.info(f"Account: {account.address} with nonce {self.w3.eth.get_transaction_count(account.address)}")
-
-            random_value = random.randint(1, 3)
-            self.logger.info(f"Random value: {random_value}")
+        
+            random_value = random.randint(1, 3)            
+            #self.logger.info(f"Random value: {random_value}")
 
             signed = self.w3.eth.account.sign_transaction({
                 'from': account.address,
                 'to': to.address,
-                'value': self.w3.to_wei(self.amount, 'ether'),
+                'value': self.w3.to_wei(data['amount_native'], 'ether'),
                 'gas': 23000,
                 'gasPrice': self.w3.to_wei('35', 'gwei'),
                 'nonce': self.w3.eth.get_transaction_count(account.address),
@@ -49,7 +45,7 @@ class TransferExecutor(BaseExecutor):
             }, account._private_key)
 
             if random_value == 2:
-                tx = self.erc20.functions.transfer(to.address, self.w3.to_wei(self.amount, 'ether')).buildTransaction({
+                tx = self.erc20.functions.transfer(to.address, self.w3.to_wei(data['amount_erc20'], 'ether')).build_transaction({
                     'from': account.address,
                     'nonce': self.w3.eth.get_transaction_count(account.address),
                     'gas': 100000,
@@ -57,7 +53,7 @@ class TransferExecutor(BaseExecutor):
                 })
                 signed = self.w3.eth.account.sign_transaction(tx, account._private_key)
             elif random_value == 3:
-                tx = self.erc721.functions.mint().buildTransaction({
+                tx = self.erc721.functions.mint().build_transaction({
                     'from': account.address,
                     'nonce': self.w3.eth.get_transaction_count(account.address),
                     'gas': 100000,
@@ -69,11 +65,11 @@ class TransferExecutor(BaseExecutor):
             tx_receipt = self.w3.eth.wait_for_transaction_receipt(tx_hash)
 
             if random_value == 2:
-                return f"Transfer {self.amount} ERC20 from {account.address} to {to.address} with tx hash {tx_hash.hex()} status {tx_receipt['status']}"
+                return f"Transfer {data['amount_erc20']} ERC20 from {account.address} to {to.address} with tx hash 0x{tx_hash.hex()} status {tx_receipt['status']}"
             elif random_value == 3:
-                return f"Mint NFT to {account.address} with tx hash {tx_hash.hex()} status {tx_receipt['status']}"
+                return f"Mint NFT to {account.address} with tx hash 0x{tx_hash.hex()} status {tx_receipt['status']}"
             
-            return f"Transfer {self.amount} from {account.address} to {to.address} with tx hash {tx_hash.hex()} status {tx_receipt['status']}"
+            return f"Transfer {data['amount_native']} from {account.address} to {to.address} with tx hash 0x{tx_hash.hex()} status {tx_receipt['status']}"
 
         tx_number = self.total_tx
         start_time = time.strftime('%Y-%m-%d %H:%M:%S', time.localtime())
