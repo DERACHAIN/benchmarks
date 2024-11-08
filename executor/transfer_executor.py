@@ -86,7 +86,7 @@ class TransferExecutor(BaseExecutor):
                 for future in concurrent.futures.as_completed(futures):
                     try:
                         result = future.result()
-                        self.logger.info(f"Transfer result: {result}")
+                        #self.logger.info(f"Transfer result: {result}")
                         self.total_tx -= 1
                     except Exception as e:
                         self.logger.error(f"Transfer failed: {e}")
