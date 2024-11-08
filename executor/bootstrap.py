@@ -1,11 +1,13 @@
 import os
 import logging
+from web3 import Web3
 
 from executor import BaseExecutor
 
 class Bootstrapper(BaseExecutor):
-    def __init__(self, rpc, operator_sk):
+    def __init__(self, rpc, operator_sk, erc20_address, erc20_abi):
         super().__init__(rpc, operator_sk)
+        self.erc20 = self.w3.eth.contract(address=Web3.to_checksum_address(erc20_address), abi=erc20_abi)
 
     def execute(self, data):
         self.logger.info(f"Bootstrapping {data}")
@@ -23,7 +25,7 @@ class Bootstrapper(BaseExecutor):
             'value': self.w3.to_wei(amount, 'ether')
         })
         tx_receipt=self.w3.eth.wait_for_transaction_receipt(tx)
-        self.logger.info(f"Transaction hash: {tx_receipt['transactionHash'].hex()} Status {tx_receipt['status']}")
+        self.logger.info(f"Transaction hash: 0x{tx_receipt['transactionHash'].hex()} Status {tx_receipt['status']}")
         return tx
     
     def fund_erc20(self, to, amount):
@@ -31,5 +33,5 @@ class Bootstrapper(BaseExecutor):
 
         tx = self.erc20.functions.transfer(to, self.w3.to_wei(amount, 'ether')).transact()
         tx_receipt=self.w3.eth.wait_for_transaction_receipt(tx)
-        self.logger.info(f"Transaction hash: {tx_receipt['transactionHash'].hex()} Status {tx_receipt['status']}")
+        self.logger.info(f"Transaction hash: 0x{tx_receipt['transactionHash'].hex()} Status {tx_receipt['status']}")
         return tx
