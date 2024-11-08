@@ -1,66 +1,52 @@
-## Foundry
-
-**Foundry is a blazing fast, portable and modular toolkit for Ethereum application development written in Rust.**
-
-Foundry consists of:
-
--   **Forge**: Ethereum testing framework (like Truffle, Hardhat and DappTools).
--   **Cast**: Swiss army knife for interacting with EVM smart contracts, sending transactions and getting chain data.
--   **Anvil**: Local Ethereum node, akin to Ganache, Hardhat Network.
--   **Chisel**: Fast, utilitarian, and verbose solidity REPL.
-
-## Documentation
-
-https://book.getfoundry.sh/
-
-## Usage
+## Smart Contracts
+This repo contrains ERC20 and ERC721 smart contracts for benchmarking.
 
 ### Build
-
-```shell
+```sh
 $ forge build
-```
-
-### Test
-
-```shell
-$ forge test
-```
-
-### Format
-
-```shell
-$ forge fmt
-```
-
-### Gas Snapshots
-
-```shell
-$ forge snapshot
-```
-
-### Anvil
-
-```shell
-$ anvil
 ```
 
 ### Deploy
 
-```shell
-$ forge script script/Counter.s.sol:CounterScript --rpc-url <your_rpc_url> --private-key <your_private_key>
+- ERC20
+```sh
+$ forge create \
+--rpc-url <rpc-url> \
+--constructor-args <supply_number_in_wei> \
+--private-key <private-key> \
+src/ERC20.sol:BMToken
 ```
 
-### Cast
-
-```shell
-$ cast <subcommand>
+- ERC721
+```sh
+$ forge create \
+--rpc-url <rpc-url> \
+--constructor-args "BMFreemint" "BMNFT" \
+--private-key <private-key> \
+src/ERC721.sol:BMFreeMint
 ```
 
-### Help
+### Verify
 
-```shell
-$ forge --help
-$ anvil --help
-$ cast --help
+- ERC20
+```sh
+$ forge verify-contract \
+--rpc-url <rpc-url> \
+--constructor-args $(cast abi-encode "constructor(uint256)" <supply_number_in_wei>) \
+--verifier blockscout \
+--verifier-url 'https://trace.derachain.com/api/' \
+<deployed-address> \
+src/ERC20.sol:BMToken
 ```
+
+- ERC721
+```sh
+$ forge verify-contract \
+--rpc-url <rpc-url> \
+--constructor-args $(cast abi-encode "constructor(string,string)" "BMFreemint" "BMNFT") \
+--verifier blockscout \
+--verifier-url 'https://trace.derachain.com/api/' \
+<deployed-address> \
+src/ERC721.sol:BMFreeMint
+```
+

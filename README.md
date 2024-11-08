@@ -13,6 +13,10 @@ The code benchmarking DERA chain, such as TPS, finality.
 $ pip install -r requirement.txt
 ```
 
+## Smart contracts
+
+- Please refer to [Smart Contracts](./contracts/README.md) for more details.
+
 ## Run
 
 - Run script

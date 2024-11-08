@@ -4,7 +4,8 @@ import logging
 import argparse
 
 from generator import WalletGenerator
-from executor import NativeTransferExecutor, Bootstrapper
+from executor import TransferExecutor, Bootstrapper
+from helpers import load_abi
 
 
 if __name__ == "__main__":
@@ -33,7 +34,14 @@ if __name__ == "__main__":
     elif args.action == 'native_transfer':        
         with open('wallets.json') as file:
             wallets = json.load(file)
-            executor = NativeTransferExecutor(os.environ.get('RPC_ENDPOINT'), os.environ.get('PRIVATE_KEY'), wallets[:args.number], args.tx)
-            executor.execute({'amount': 0.01})
+            executor = TransferExecutor(os.environ.get('RPC_ENDPOINT'),
+                                        os.environ.get('PRIVATE_KEY'),
+                                        os.environ.get('ERC20_ADDRESS'),
+                                        os.environ.get('ERC721_ADDRESS'),
+                                        load_abi(f"{os.path.dirname(__file__)}/abis/erc20.json"),
+                                        load_abi(f"{os.path.dirname(__file__)}/abis/erc721.json"),
+                                        wallets[:args.number],
+                                        args.tx)
+            executor.execute({'type': 'native', 'amount': 0.01})
     
     logging.info(f"Action {args.action} completed")
