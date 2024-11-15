@@ -8,7 +8,7 @@ import time
 import random
 
 class TransferExecutor(BaseExecutor):
-#     def __init__(self, rpc, operator_sk, erc20_address, erc721_address, erc20_abi, erc721_abi, wallets, total_tx=10**5):
+    def __init__(self, rpc, operator_sk, erc20_address, erc721_address, erc20_abi, erc721_abi, wallets, total_tx=10**5):
 #         super().__init__(rpc, operator_sk)
 
 #         self.w3 = Web3(Web3.HTTPProvider(rpc))
