@@ -26,7 +26,7 @@ class TransferExecutor(BaseExecutor):
     def execute(self, data):
         import concurrent.futures
 
-#         def transfer(wallet, index):
+        def transfer(wallet, index):
 #             account = self.wallets[index]
 #             to = self.wallets[(index + 1) % len(self.wallets)]
         
