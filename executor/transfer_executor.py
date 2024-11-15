@@ -27,7 +27,7 @@ class TransferExecutor(BaseExecutor):
         import concurrent.futures
 
         def transfer(wallet, index):
-#             account = self.wallets[index]
+            account = self.wallets[index]
 #             to = self.wallets[(index + 1) % len(self.wallets)]
         
 #             random_value = random.randint(1, 3)            
