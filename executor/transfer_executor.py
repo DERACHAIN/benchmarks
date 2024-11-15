@@ -43,14 +43,14 @@ class TransferExecutor(BaseExecutor):
                 'chainId': self.w3.eth.chain_id,
             }, account._private_key)
 
-#             if random_value == 2:
-#                 tx = self.erc20.functions.transfer(to.address, self.w3.to_wei(data['amount_erc20'], 'ether')).build_transaction({
-#                     'from': account.address,
-#                     'nonce': self.w3.eth.get_transaction_count(account.address),
-#                     'gas': 100000,
-#                     'gasPrice': self.w3.to_wei('35', 'gwei'),
-#                 })
-#                 signed = self.w3.eth.account.sign_transaction(tx, account._private_key)
+            if random_value == 2:
+                tx = self.erc20.functions.transfer(to.address, self.w3.to_wei(data['amount_erc20'], 'ether')).build_transaction({
+                    'from': account.address,
+                    'nonce': self.w3.eth.get_transaction_count(account.address),
+                    'gas': 100000,
+                    'gasPrice': self.w3.to_wei('35', 'gwei'),
+                })
+                signed = self.w3.eth.account.sign_transaction(tx, account._private_key)
 #             elif random_value == 3:
 #                 tx = self.erc721.functions.mint().build_transaction({
 #                     'from': account.address,
