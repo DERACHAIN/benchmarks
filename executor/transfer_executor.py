@@ -33,7 +33,7 @@ class TransferExecutor(BaseExecutor):
             random_value = random.randint(1, 3)
             #self.logger.info(f"Random value: {random_value}")
 
-#             signed = self.w3.eth.account.sign_transaction({
+            signed = self.w3.eth.account.sign_transaction({
 #                 'from': account.address,
 #                 'to': to.address,
 #                 'value': self.w3.to_wei(data['amount_native'], 'ether'),
