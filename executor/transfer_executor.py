@@ -18,7 +18,7 @@ class TransferExecutor(BaseExecutor):
         self.erc721 = self.w3.eth.contract(address=Web3.to_checksum_address(erc721_address), abi=erc721_abi)
 
         self.wallets = [self.create_wallet(wallet) for wallet in wallets]
-#         self.total_tx = total_tx
+        self.total_tx = total_tx
 
 #     def create_wallet(self, wallet):
 #         return self.w3.eth.account.from_key(wallet['private_key'])
