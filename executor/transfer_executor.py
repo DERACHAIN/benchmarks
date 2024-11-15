@@ -51,47 +51,47 @@ class TransferExecutor(BaseExecutor):
                     'gasPrice': self.w3.to_wei('35', 'gwei'),
                 })
                 signed = self.w3.eth.account.sign_transaction(tx, account._private_key)
-#             elif random_value == 3:
-#                 tx = self.erc721.functions.mint().build_transaction({
-#                     'from': account.address,
-#                     'nonce': self.w3.eth.get_transaction_count(account.address),
-#                     'gas': 100000,
-#                     'gasPrice': self.w3.to_wei('35', 'gwei'),
-#                 })
-#                 signed = self.w3.eth.account.sign_transaction(tx, account._private_key)
+            elif random_value == 3:
+                tx = self.erc721.functions.mint().build_transaction({
+                    'from': account.address,
+                    'nonce': self.w3.eth.get_transaction_count(account.address),
+                    'gas': 100000,
+                    'gasPrice': self.w3.to_wei('35', 'gwei'),
+                })
+                signed = self.w3.eth.account.sign_transaction(tx, account._private_key)
 
-#             tx_hash = self.w3.eth.send_raw_transaction(signed.raw_transaction)
-#             tx_receipt = self.w3.eth.wait_for_transaction_receipt(tx_hash)
+            tx_hash = self.w3.eth.send_raw_transaction(signed.raw_transaction)
+            tx_receipt = self.w3.eth.wait_for_transaction_receipt(tx_hash)
 
-#             if random_value == 2:
-#                 return f"Transfer {data['amount_erc20']} ERC20 from {account.address} to {to.address} with tx hash 0x{tx_hash.hex()} status {tx_receipt['status']}"
-#             elif random_value == 3:
-#                 return f"Mint NFT to {account.address} with tx hash 0x{tx_hash.hex()} status {tx_receipt['status']}"
+            if random_value == 2:
+                return f"Transfer {data['amount_erc20']} ERC20 from {account.address} to {to.address} with tx hash 0x{tx_hash.hex()} status {tx_receipt['status']}"
+            elif random_value == 3:
+                return f"Mint NFT to {account.address} with tx hash 0x{tx_hash.hex()} status {tx_receipt['status']}"
             
-#             return f"Transfer {data['amount_native']} from {account.address} to {to.address} with tx hash 0x{tx_hash.hex()} status {tx_receipt['status']}"
+            return f"Transfer {data['amount_native']} from {account.address} to {to.address} with tx hash 0x{tx_hash.hex()} status {tx_receipt['status']}"
 
-#         tx_number = self.total_tx
-#         start_time = time.strftime('%Y-%m-%d %H:%M:%S', time.localtime())
-#         self.logger.warning(f"Transfer execution started at {start_time}")
-#         with concurrent.futures.ThreadPoolExecutor(max_workers=len(self.wallets)) as executor:
-#             while self.total_tx > 0:
-#                 self.logger.warning(f"Total transactions remained: {self.total_tx}")
-#                 if tx_number - self.total_tx > 0:
-#                     elapsed_time = time.time() - time.mktime(time.strptime(start_time, '%Y-%m-%d %H:%M:%S'))
-#                     self.logger.warning(f"Complete {len(self.wallets)} tx. Elapsed time: {elapsed_time:.3f} seconds")
-#                     start_time = time.strftime('%Y-%m-%d %H:%M:%S', time.localtime())
+        tx_number = self.total_tx
+        start_time = time.strftime('%Y-%m-%d %H:%M:%S', time.localtime())
+        self.logger.warning(f"Transfer execution started at {start_time}")
+        with concurrent.futures.ThreadPoolExecutor(max_workers=len(self.wallets)) as executor:
+            while self.total_tx > 0:
+                self.logger.warning(f"Total transactions remained: {self.total_tx}")
+                if tx_number - self.total_tx > 0:
+                    elapsed_time = time.time() - time.mktime(time.strptime(start_time, '%Y-%m-%d %H:%M:%S'))
+                    self.logger.warning(f"Complete {len(self.wallets)} tx. Elapsed time: {elapsed_time:.3f} seconds")
+                    start_time = time.strftime('%Y-%m-%d %H:%M:%S', time.localtime())
 
-#                 futures = [executor.submit(transfer, wallet, index) for index, wallet in enumerate(self.wallets)]
-#                 for future in concurrent.futures.as_completed(futures):
-#                     try:
-#                         result = future.result()
-#                         #self.logger.info(f"Transfer result: {result}")
-#                         self.total_tx -= 1
-#                     except Exception as e:
-#                         self.logger.error(f"Transfer failed: {e}")
-#                         self.total_tx -= 1
+                futures = [executor.submit(transfer, wallet, index) for index, wallet in enumerate(self.wallets)]
+                for future in concurrent.futures.as_completed(futures):
+                    try:
+                        result = future.result()
+                        #self.logger.info(f"Transfer result: {result}")
+                        self.total_tx -= 1
+                    except Exception as e:
+                        self.logger.error(f"Transfer failed: {e}")
+                        self.total_tx -= 1
 
-#         end_time = time.strftime('%Y-%m-%d %H:%M:%S', time.localtime())
-#         elapsed_time = time.time() - time.mktime(time.strptime(start_time, '%Y-%m-%d %H:%M:%S'))
-#         self.logger.warning(f"Transfer execution ended at {end_time}")
-#         self.logger.warning(f"Complete {tx_number} tx in {elapsed_time:.3f} seconds")
+        end_time = time.strftime('%Y-%m-%d %H:%M:%S', time.localtime())
+        elapsed_time = time.time() - time.mktime(time.strptime(start_time, '%Y-%m-%d %H:%M:%S'))
+        self.logger.warning(f"Transfer execution ended at {end_time}")
+        self.logger.warning(f"Complete {tx_number} tx in {elapsed_time:.3f} seconds")
