@@ -23,9 +23,8 @@ class TransferExecutor(BaseExecutor):
     def create_wallet(self, wallet):
         return self.w3.eth.account.from_key(wallet['private_key'])
 
-#     def execute(self, data):        
-
-#         import concurrent.futures
+    def execute(self, data):
+        import concurrent.futures
 
 #         def transfer(wallet, index):
 #             account = self.wallets[index]
