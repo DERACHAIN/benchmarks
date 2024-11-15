@@ -34,14 +34,14 @@ class TransferExecutor(BaseExecutor):
             #self.logger.info(f"Random value: {random_value}")
 
             signed = self.w3.eth.account.sign_transaction({
-#                 'from': account.address,
-#                 'to': to.address,
-#                 'value': self.w3.to_wei(data['amount_native'], 'ether'),
-#                 'gas': 23000,
-#                 'gasPrice': self.w3.to_wei('35', 'gwei'),
-#                 'nonce': self.w3.eth.get_transaction_count(account.address),
-#                 'chainId': self.w3.eth.chain_id,
-#             }, account._private_key)
+                'from': account.address,
+                'to': to.address,
+                'value': self.w3.to_wei(data['amount_native'], 'ether'),
+                'gas': 23000,
+                'gasPrice': self.w3.to_wei('35', 'gwei'),
+                'nonce': self.w3.eth.get_transaction_count(account.address),
+                'chainId': self.w3.eth.chain_id,
+            }, account._private_key)
 
 #             if random_value == 2:
 #                 tx = self.erc20.functions.transfer(to.address, self.w3.to_wei(data['amount_erc20'], 'ether')).build_transaction({
