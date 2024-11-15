@@ -28,7 +28,7 @@ class TransferExecutor(BaseExecutor):
 
         def transfer(wallet, index):
             account = self.wallets[index]
-#             to = self.wallets[(index + 1) % len(self.wallets)]
+            to = self.wallets[(index + 1) % len(self.wallets)]
         
 #             random_value = random.randint(1, 3)            
 #             #self.logger.info(f"Random value: {random_value}")
