@@ -30,8 +30,8 @@ class TransferExecutor(BaseExecutor):
             account = self.wallets[index]
             to = self.wallets[(index + 1) % len(self.wallets)]
         
-#             random_value = random.randint(1, 3)            
-#             #self.logger.info(f"Random value: {random_value}")
+            random_value = random.randint(1, 3)
+            #self.logger.info(f"Random value: {random_value}")
 
 #             signed = self.w3.eth.account.sign_transaction({
 #                 'from': account.address,
