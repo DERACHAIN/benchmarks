@@ -12,7 +12,7 @@ class TransferExecutor(BaseExecutor):
         super().__init__(rpc, operator_sk)
 
         self.w3 = Web3(Web3.HTTPProvider(rpc))
-#         self.w3.middleware_onion.inject(ExtraDataToPOAMiddleware, layer=0)
+        self.w3.middleware_onion.inject(ExtraDataToPOAMiddleware, layer=0)
 
 #         self.erc20 = self.w3.eth.contract(address=Web3.to_checksum_address(erc20_address), abi=erc20_abi)
 #         self.erc721 = self.w3.eth.contract(address=Web3.to_checksum_address(erc721_address), abi=erc721_abi)
