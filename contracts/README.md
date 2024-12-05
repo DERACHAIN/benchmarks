@@ -34,7 +34,7 @@ $ forge verify-contract \
 --rpc-url <rpc-url> \
 --constructor-args $(cast abi-encode "constructor(uint256)" <supply_number_in_wei>) \
 --verifier blockscout \
---verifier-url 'https://trace.derachain.com/api/' \
+--verifier-url 'https://testnet.derachain.com/api/' \
 <deployed-address> \
 src/ERC20.sol:BMToken
 ```
@@ -45,8 +45,8 @@ $ forge verify-contract \
 --rpc-url <rpc-url> \
 --constructor-args $(cast abi-encode "constructor(string,string)" "BMFreemint" "BMNFT") \
 --verifier blockscout \
---verifier-url 'https://trace.derachain.com/api/' \
+--verifier-url 'https://testnet.derachain.com/api/' \
 <deployed-address> \
 src/ERC721.sol:BMFreeMint
 ```
-
+*Note: please replace the endpoint of the explorer to `verifier-url` argument respectively with the testnet / mainnet*

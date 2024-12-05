@@ -19,8 +19,17 @@ $ pip install -r requirement.txt
 
 ## Run
 
-- Run script
-
+- Generate wallets
 ```sh
-$ python <script>.py
+$ python main.py -a generate_wallets
+```
+
+- Fund wallets
+```sh
+$ python main.py -a bootstrap -b <initial_balance>
+```
+
+- Execute benchmarks
+```sh
+$ python main.py -a transfer -n <number_wallets> -tx <number_txs>
 ```
