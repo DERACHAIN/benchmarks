@@ -26,7 +26,7 @@ $ python main.py -a generate_wallets
 
 - Fund wallets
 ```sh
-$ python main.py -a bootstrap -b <initial_balance>
+$ python main.py -a bootstrap -t <native | erc20> -b <initial_balance>
 ```
 
 - Execute benchmarks
