@@ -17,7 +17,7 @@ $ pip install -r requirement.txt
 
 - Please refer to [Smart Contracts](./contracts/README.md) for more details.
 
-## Run
+## Commands
 
 - Generate wallets
 ```sh
@@ -34,7 +34,7 @@ $ python main.py -a bootstrap -t <native | erc20> -b <initial_balance>
 $ python main.py -a transfer -n <number_wallets> -tx <number_txs>
 ```
 
-## PROD
+## PROD run
 - It is necessary to increase the file descriptors number before running the benchmarks scripts
 ```sh
 $ ulimit -n 8192
