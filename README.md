@@ -33,3 +33,9 @@ $ python main.py -a bootstrap -t <native | erc20> -b <initial_balance>
 ```sh
 $ python main.py -a transfer -n <number_wallets> -tx <number_txs>
 ```
+
+## PROD
+- Increase the file descriptor number
+```sh
+$ ulimit -n 8192
+```
