@@ -8,20 +8,20 @@ import time
 import random
 
 class TransferExecutor(BaseExecutor):
-    # def __init__(self, rpc, operator_sk, erc20_address, erc721_address, erc20_abi, erc721_abi, wallets, total_tx=10**5):
-    #     super().__init__(rpc, operator_sk)
+    def __init__(self, rpc, operator_sk, erc20_address, erc721_address, erc20_abi, erc721_abi, wallets, total_tx=10**5):
+        super().__init__(rpc, operator_sk)
 
-    #     self.w3 = Web3(Web3.HTTPProvider(rpc))
-    #     self.w3.middleware_onion.inject(ExtraDataToPOAMiddleware, layer=0)
+        self.w3 = Web3(Web3.HTTPProvider(rpc))
+        self.w3.middleware_onion.inject(ExtraDataToPOAMiddleware, layer=0)
 
-    #     self.erc20 = self.w3.eth.contract(address=Web3.to_checksum_address(erc20_address), abi=erc20_abi)
-    #     self.erc721 = self.w3.eth.contract(address=Web3.to_checksum_address(erc721_address), abi=erc721_abi)
+        self.erc20 = self.w3.eth.contract(address=Web3.to_checksum_address(erc20_address), abi=erc20_abi)
+        self.erc721 = self.w3.eth.contract(address=Web3.to_checksum_address(erc721_address), abi=erc721_abi)
 
-    #     self.wallets = [self.create_wallet(wallet) for wallet in wallets]
-    #     self.total_tx = total_tx
+        self.wallets = [self.create_wallet(wallet) for wallet in wallets]
+        self.total_tx = total_tx
 
-    def create_wallet(self, wallet):
-        return self.w3.eth.account.from_key(wallet['private_key'])
+    # def create_wallet(self, wallet):
+    #     return self.w3.eth.account.from_key(wallet['private_key'])
 
     def execute(self, data):
         import concurrent.futures
