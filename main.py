@@ -11,9 +11,11 @@ from helpers import load_abi
 if __name__ == "__main__":
     from dotenv import load_dotenv
     load_dotenv()
-    logging.basicConfig(filename='logs.txt', level=logging.INFO, 
-                        format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
-    #logging.basicConfig(level=logging.INFO)
+    #logging.basicConfig(filename='logs.txt', level=logging.INFO, format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+    
+    log_level = os.environ.get('LOG_LEVEL', 'INFO').upper()
+    numerical_level = getattr(logging, log_level, logging.INFO)
+    logging.basicConfig(level=numerical_level, format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
     
     parser = argparse.ArgumentParser(description='Benchmark bot.')    
     parser.add_argument('-a', '--action', type=str, help="Actions: generate_wallets | bootstrap | transfer")
