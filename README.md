@@ -21,17 +21,19 @@ $ pip install -r requirement.txt
 
 - Generate wallets
 ```sh
-$ python main.py -a generate_wallets
+$ python main.py -a generate_wallets -n WALLET_NUMBER
 ```
 
 - Fund wallets
 ```sh
-$ python main.py -a bootstrap -t <native | erc20> -b <initial_balance>
+$ python main.py -a bootstrap -t TOKEN_TYPE -b INITIAL_BALANCE
 ```
+
+*Note: TOKEN_TYPE can be `native` or `erc20`*
 
 - Execute benchmarks
 ```sh
-$ python main.py -a transfer -n <number_wallets> -tx <number_txs>
+$ python main.py -a transfer -n WALLET_NUMBER -tx NUMBER_TXS
 ```
 
 ## PROD run

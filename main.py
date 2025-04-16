@@ -26,7 +26,7 @@ if __name__ == "__main__":
 
     if args.action == 'generate_wallets':
         wg = WalletGenerator()
-        wg.generate_wallets()
+        wg.generate_wallets(int(args.number))
     elif args.action == 'bootstrap':        
         bootstrapper = Bootstrapper(os.environ.get('RPC_ENDPOINT'), 
                                     os.environ.get('PRIVATE_KEY'),
