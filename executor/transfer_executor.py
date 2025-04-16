@@ -110,7 +110,7 @@ class TransferExecutor(BaseExecutor):
 
                     number_success = 0
                     number_failed = 0
-                    
+
                     for future in concurrent.futures.as_completed(futures):
                         try:
                             result = future.result()
@@ -122,7 +122,7 @@ class TransferExecutor(BaseExecutor):
                             else:
                                 raise Exception(f"Transaction failed {result}")
                         except Exception as e:
-                            self.logger.error(f"{e}")
+                            self.logger.info(f"{e}")
                             number_failed += 1                            
 
                     if number_failed > number_success:
