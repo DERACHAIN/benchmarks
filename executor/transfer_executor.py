@@ -69,7 +69,7 @@ class TransferExecutor(BaseExecutor):
                     })
                     signed = self.w3.eth.account.sign_transaction(tx, account._private_key)
 
-                if signed is None:
+                if signed is not None:
                     tx_hash = self.w3.eth.send_raw_transaction(signed.raw_transaction)
                     tx_receipt = self.w3.eth.wait_for_transaction_receipt(tx_hash)
             
@@ -84,6 +84,7 @@ class TransferExecutor(BaseExecutor):
             except Exception as e:
                 self.logger.error(f"Error during transfer: {e}")
                 
+            finally:
                 return {
                     "transfer_type": random_value,
                     "from": account.address,
