@@ -8,6 +8,7 @@ Keep long running process
 ## Install dependencies
 
 ```sh
+$ conda activate ENV_NAME
 $ pip install supervisor
 ```
 
