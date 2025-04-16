@@ -67,12 +67,21 @@ class TransferExecutor(BaseExecutor):
             tx_hash = self.w3.eth.send_raw_transaction(signed.raw_transaction)
             tx_receipt = self.w3.eth.wait_for_transaction_receipt(tx_hash)
 
-            if random_value == 2:
-                return f"Transfer {data['amount_erc20']} ERC20 from {account.address} to {to.address} with tx hash 0x{tx_hash.hex()} status {tx_receipt['status']}"
-            elif random_value == 3:
-                return f"Mint NFT to {account.address} with tx hash 0x{tx_hash.hex()} status {tx_receipt['status']}"
+            # if random_value == 2:
+            #     return f"Transfer {data['amount_erc20']} ERC20 from {account.address} to {to.address} with tx hash 0x{tx_hash.hex()} status {tx_receipt['status']}"
+            # elif random_value == 3:
+            #     return f"Mint NFT to {account.address} with tx hash 0x{tx_hash.hex()} status {tx_receipt['status']}"
             
-            return f"Transfer {data['amount_native']} from {account.address} to {to.address} with tx hash 0x{tx_hash.hex()} status {tx_receipt['status']}"
+            # return f"Transfer {data['amount_native']} from {account.address} to {to.address} with tx hash 0x{tx_hash.hex()} status {tx_receipt['status']}"
+        
+            return {
+                "transfer_type": random_value,
+                "from": account.address,
+                "to": to.address,
+                "amount": data['amount_native'] if random_value == 1 else data['amount_erc20'] if random_value == 2 else 1,
+                "tx_hash": tx_hash.hex(),
+                "status": tx_receipt['status'],
+            }
 
         tx_number = 0
         max_workers = len(self.wallets)
@@ -91,15 +100,20 @@ class TransferExecutor(BaseExecutor):
                         try:
                             result = future.result()
                             self.logger.info(f"Transfer result: {result}")
-                            tx_number += 1
+
+                            if result['status'] == 1:
+                                tx_number += 1
+                            else:
+                                raise Exception(f"Transaction failed {result}")
                         except Exception as e:
-                            self.logger.error(f"Transfer failed: {e}")
+                            self.logger.error(f"{e}")
                             max_workers -= 1
+
                             if max_workers <= 0:
                                 self.logger.error("All workers failed. Exiting.")
 
                                 if self.slack:
-                                    self.slack.send_message("All workers failed. Exiting.")
+                                    self.slack.send_message(slack_title, f"All workers failed. Exiting. Total transactions: {tx_number}", is_success=False)
                                     
                                 sys.exit(1)
                     
@@ -107,7 +121,7 @@ class TransferExecutor(BaseExecutor):
                     self.logger.warning(f"Complete {tx_number} txs. Elapsed time: {elapsed_time:.3f} seconds")
 
         except KeyboardInterrupt:
-            self.logger.warning("Transfer execution interrupted by user. Total transactions: {tx_number}")
+            self.logger.warning(f"Transfer execution interrupted by user. Total transactions: {tx_number}")
 
             if self.slack:
                 self.slack.send_message(slack_title, f"Transfer execution interrupted by user. Total transactions: {tx_number}")
