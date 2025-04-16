@@ -2,20 +2,34 @@
 Keep long running process
 
 ## Dependencies
+
 - Python 3.11 (by conda)
 
-# Install dependencies
+## Install dependencies
+
 ```sh
 $ pip install supervisor
 ```
 
-# Start
-Run following command from project folder
+## Setup
+
+- Create logs folder
+
+```sh
+$ mkdir /var/log/benchmarks
+$ chown $(whoami):$(whoami) /var/log/benchmarks/
+```
+
+## Start
+
+- Run following command from project folder
+
 ```sh
 $ supervisord -c ./devops/supervisord.conf
 ```
 
-# Manage
+## Manage
+
 ```sh
 $ supervisorctl
 ```
