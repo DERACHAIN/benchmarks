@@ -107,6 +107,10 @@ class TransferExecutor(BaseExecutor):
                     start_time = time.strftime('%Y-%m-%d %H:%M:%S', time.localtime())
 
                     futures = [executor.submit(transfer, wallet, index, max_workers) for index, wallet in enumerate(self.wallets[:max_workers])]
+
+                    number_success = 0
+                    number_failed = 0
+                    
                     for future in concurrent.futures.as_completed(futures):
                         try:
                             result = future.result()
@@ -114,22 +118,23 @@ class TransferExecutor(BaseExecutor):
 
                             if result['status'] == 1:
                                 tx_number += 1
+                                number_success += 1
                             else:
                                 raise Exception(f"Transaction failed {result}")
                         except Exception as e:
                             self.logger.error(f"{e}")
-                            max_workers -= 1
+                            number_failed += 1                            
 
-                            if max_workers <= 0:
-                                self.logger.error("All workers failed. Exiting.")
+                    if number_failed > number_success:
+                        self.logger.error(f"Number failed {number_failed} > number success {number_success}. Exiting.")
 
-                                if self.slack:
-                                    self.slack.send_message(slack_title, f"All workers failed. Exiting. Total transactions: {tx_number}", is_success=False)
-                                    
-                                sys.exit(1)
+                        if self.slack:
+                            self.slack.send_message(slack_title, f"Number failed {number_failed} > number success {number_success}. Exiting. Total transactions: {tx_number}", is_success=False)
+                            
+                        sys.exit(1)
                     
                     elapsed_time = time.time() - time.mktime(time.strptime(start_time, '%Y-%m-%d %H:%M:%S'))
-                    self.logger.warning(f"Complete {tx_number} txs. Elapsed time: {elapsed_time:.3f} seconds")
+                    self.logger.warning(f"Complete {tx_number} txs. Number success {number_success}. Number failed {number_failed}. Elapsed time: {elapsed_time:.3f} seconds")
 
         except KeyboardInterrupt:
             self.logger.warning(f"Transfer execution interrupted by user. Total transactions: {tx_number}")
