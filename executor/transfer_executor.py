@@ -81,10 +81,11 @@ class TransferExecutor(BaseExecutor):
                         "tx_hash": tx_hash.hex(),
                         "status": tx_receipt['status'],
                     }
+                else:
+                    raise Exception("Transaction signing failed")
             except Exception as e:
                 self.logger.error(f"Error during transfer: {e}")
                 
-            finally:
                 return {
                     "transfer_type": random_value,
                     "from": account.address,
