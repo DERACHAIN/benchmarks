@@ -50,8 +50,9 @@ class TransferExecutor(BaseExecutor):
                 tx = self.erc20.functions.transfer(to.address, self.w3.to_wei(data['amount_erc20'], 'ether')).build_transaction({
                     'from': account.address,
                     'nonce': self.w3.eth.get_transaction_count(account.address),
-                    'gas': 100000,
+                    'gas': 150000,
                     'gasPrice': self.w3.to_wei('35', 'gwei'),
+                    'chainId': self.w3.eth.chain_id,
                 })
                 signed = self.w3.eth.account.sign_transaction(tx, account._private_key)
 
@@ -61,6 +62,7 @@ class TransferExecutor(BaseExecutor):
                     'nonce': self.w3.eth.get_transaction_count(account.address),
                     'gas': 100000,
                     'gasPrice': self.w3.to_wei('35', 'gwei'),
+                    'chainId': self.w3.eth.chain_id,
                 })
                 signed = self.w3.eth.account.sign_transaction(tx, account._private_key)
 

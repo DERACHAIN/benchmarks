@@ -31,6 +31,10 @@ $ supervisord -c ./devops/supervisord.conf
 
 ## Manage
 
+- Run console 
+
 ```sh
 $ supervisorctl
 ```
+
+- Useful commands: status, start, stop, restart
