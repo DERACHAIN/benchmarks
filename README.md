@@ -37,6 +37,7 @@ $ python main.py -a transfer -n WALLET_NUMBER -tx NUMBER_TXS
 ```
 
 ## PROD run
+
 - It is necessary to increase the file descriptors number before running the benchmarks scripts
 ```sh
 $ ulimit -n 8192

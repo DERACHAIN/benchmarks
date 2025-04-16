@@ -6,9 +6,11 @@ from web3.middleware import ExtraDataToPOAMiddleware
 from executor import BaseExecutor
 import time
 import random
+import signal
+import sys
 
 class TransferExecutor(BaseExecutor):
-    def __init__(self, rpc, operator_sk, erc20_address, erc721_address, erc20_abi, erc721_abi, wallets, total_tx=10**5):
+    def __init__(self, rpc, operator_sk, erc20_address, erc721_address, erc20_abi, erc721_abi, wallets, slack=None):
         super().__init__(rpc, operator_sk)
 
         self.w3 = Web3(Web3.HTTPProvider(rpc))
@@ -18,7 +20,8 @@ class TransferExecutor(BaseExecutor):
         self.erc721 = self.w3.eth.contract(address=Web3.to_checksum_address(erc721_address), abi=erc721_abi)
 
         self.wallets = [self.create_wallet(wallet) for wallet in wallets]
-        self.total_tx = total_tx
+
+        self.slack = slack
 
     def create_wallet(self, wallet):
         return self.w3.eth.account.from_key(wallet['private_key'])
@@ -26,9 +29,9 @@ class TransferExecutor(BaseExecutor):
     def execute(self, data):
         import concurrent.futures
 
-        def transfer(wallet, index):
-            account = self.wallets[index]
-            to = self.wallets[(index + 1) % len(self.wallets)]
+        def transfer(wallet, index, max_workers):
+            account = wallet
+            to = self.wallets[:max_workers][(index + 1) % max_workers]
         
             random_value = random.randint(1, 3)
             #self.logger.info(f"Random value: {random_value}")
@@ -51,6 +54,7 @@ class TransferExecutor(BaseExecutor):
                     'gasPrice': self.w3.to_wei('35', 'gwei'),
                 })
                 signed = self.w3.eth.account.sign_transaction(tx, account._private_key)
+
             elif random_value == 3:
                 tx = self.erc721.functions.mint().build_transaction({
                     'from': account.address,
@@ -70,28 +74,44 @@ class TransferExecutor(BaseExecutor):
             
             return f"Transfer {data['amount_native']} from {account.address} to {to.address} with tx hash 0x{tx_hash.hex()} status {tx_receipt['status']}"
 
-        tx_number = self.total_tx
+        tx_number = 0
+        max_workers = len(self.wallets)
+
+        slack_title = "Bots activity"
         start_time = time.strftime('%Y-%m-%d %H:%M:%S', time.localtime())
         self.logger.warning(f"Transfer execution started at {start_time}")
-        with concurrent.futures.ThreadPoolExecutor(max_workers=len(self.wallets)) as executor:
-            while self.total_tx > 0:
-                self.logger.warning(f"Total transactions remained: {self.total_tx}")
-                if tx_number - self.total_tx > 0:
-                    elapsed_time = time.time() - time.mktime(time.strptime(start_time, '%Y-%m-%d %H:%M:%S'))
-                    self.logger.warning(f"Complete {len(self.wallets)} tx. Elapsed time: {elapsed_time:.3f} seconds")
+
+        try:
+            while True:
+                with concurrent.futures.ThreadPoolExecutor(max_workers=max_workers) as executor:
                     start_time = time.strftime('%Y-%m-%d %H:%M:%S', time.localtime())
 
-                futures = [executor.submit(transfer, wallet, index) for index, wallet in enumerate(self.wallets)]
-                for future in concurrent.futures.as_completed(futures):
-                    try:
-                        result = future.result()
-                        #self.logger.info(f"Transfer result: {result}")
-                        self.total_tx -= 1
-                    except Exception as e:
-                        self.logger.error(f"Transfer failed: {e}")
-                        self.total_tx -= 1
+                    futures = [executor.submit(transfer, wallet, index, max_workers) for index, wallet in enumerate(self.wallets[:max_workers])]
+                    for future in concurrent.futures.as_completed(futures):
+                        try:
+                            result = future.result()
+                            self.logger.info(f"Transfer result: {result}")
+                            tx_number += 1
+                        except Exception as e:
+                            self.logger.error(f"Transfer failed: {e}")
+                            max_workers -= 1
+                            if max_workers <= 0:
+                                self.logger.error("All workers failed. Exiting.")
 
-        end_time = time.strftime('%Y-%m-%d %H:%M:%S', time.localtime())
-        elapsed_time = time.time() - time.mktime(time.strptime(start_time, '%Y-%m-%d %H:%M:%S'))
-        self.logger.warning(f"Transfer execution ended at {end_time}")
-        self.logger.warning(f"Complete {tx_number} tx in {elapsed_time:.3f} seconds")
+                                if self.slack:
+                                    self.slack.send_message("All workers failed. Exiting.")
+                                    
+                                sys.exit(1)
+                    
+                    elapsed_time = time.time() - time.mktime(time.strptime(start_time, '%Y-%m-%d %H:%M:%S'))
+                    self.logger.warning(f"Complete {tx_number} txs. Elapsed time: {elapsed_time:.3f} seconds")
+
+        except KeyboardInterrupt:
+            self.logger.warning("Transfer execution interrupted by user. Total transactions: {tx_number}")
+
+            if self.slack:
+                self.slack.send_message(slack_title, f"Transfer execution interrupted by user. Total transactions: {tx_number}")
+
+            sys.exit(0)
+
+        
