@@ -15,7 +15,7 @@ class SlackNotifier(metaclass=Singleton):
         }]
         
         payload = {
-            "text": title,
+            "text": f"*{title}*",
             "attachments": attachments,
         }
         response = requests.post(self.webhook_url, data=json.dumps(payload), headers={'Content-Type': 'application/json'})

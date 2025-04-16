@@ -76,6 +76,8 @@ class TransferExecutor(BaseExecutor):
 
         tx_number = 0
         max_workers = len(self.wallets)
+
+        slack_title = "Bots activity"
         start_time = time.strftime('%Y-%m-%d %H:%M:%S', time.localtime())
         self.logger.warning(f"Transfer execution started at {start_time}")
 
@@ -95,13 +97,21 @@ class TransferExecutor(BaseExecutor):
                             max_workers -= 1
                             if max_workers <= 0:
                                 self.logger.error("All workers failed. Exiting.")
-                                self.slack.send_message("All workers failed. Exiting.") if self.slack else None
+
+                                if self.slack:
+                                    self.slack.send_message("All workers failed. Exiting.")
+                                    
                                 sys.exit(1)
                     
                     elapsed_time = time.time() - time.mktime(time.strptime(start_time, '%Y-%m-%d %H:%M:%S'))
                     self.logger.warning(f"Complete {tx_number} txs. Elapsed time: {elapsed_time:.3f} seconds")
+
         except KeyboardInterrupt:
-            self.logger.warning("Transfer execution interrupted by user")
+            self.logger.warning("Transfer execution interrupted by user. Total transactions: {tx_number}")
+
+            if self.slack:
+                self.slack.send_message(slack_title, f"Transfer execution interrupted by user. Total transactions: {tx_number}")
+
             sys.exit(0)
 
         

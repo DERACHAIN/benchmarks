@@ -23,7 +23,8 @@ if __name__ == "__main__":
     numerical_level = getattr(logging, log_level, logging.INFO)
     logging.basicConfig(level=numerical_level, format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
 
-    signal.signal(signal.SIGINT, signal_handler)
+    #signal.signal(signal.SIGINT, signal_handler)
+
     slack = SlackNotifier(os.environ.get('SLACK_WEBHOOK_URL')) if os.environ.get('SLACK_WEBHOOK_URL') else None
     
     parser = argparse.ArgumentParser(description='Benchmark bot.')    
@@ -54,9 +55,6 @@ if __name__ == "__main__":
     elif args.action == 'transfer':    
         with open('wallets.json') as file:
             wallets = json.load(file)
-
-            logging.info(f"amount native {args.amount_native}")
-            logging.info(f"amount erc20 {args.amount_erc20}")
 
             wallet_numbers = int(args.number) if args.number < len(wallets) and args.number > 0 else len(wallets)
                 

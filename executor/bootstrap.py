@@ -14,13 +14,20 @@ class Bootstrapper(BaseExecutor):
 
     def execute(self, data):
         self.logger.info(f"Bootstrapping {data}")
-        if data['type'] == 'native':
-            self.fund_native(data['amount'])
-        elif data['type'] == 'erc20':
-            self.fund_erc20(data['amount'])
-        
-        if self.slack:
-            self.slack.send_message("Bootstrap", f"Bootstrapping {data['type']} with amount {data['amount']} has completed.")
+        slack_title = "Bootstrap bots"
+
+        try:
+            if data['type'] == 'native':
+                self.fund_native(data['amount'])
+            elif data['type'] == 'erc20':
+                self.fund_erc20(data['amount'])
+            
+            if self.slack:
+                self.slack.send_message(slack_title, f"Bootstrapping {data['type']} with amount {data['amount']} has completed.")
+        except Exception as e:
+            self.logger.error(f"Error during bootstrapping: {e}")
+            if self.slack:
+                self.slack.send_message(slack_title, f"Error during bootstrapping: {e}", is_success=False)        
             
     def fund_native(self, amount):
         for to in self.wallets:
