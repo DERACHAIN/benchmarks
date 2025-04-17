@@ -69,23 +69,26 @@ class Monitor(BaseExecutor):
         while True:
             # wallets fund
             for wallet in self.wallets:
-                balance = self.w3.eth.get_balance(wallet.address)
-                balance_eth = self.w3.from_wei(balance, 'ether')
 
-                if balance_eth < self.config.native_balance_threshold:
-                    logging.warning(f"Wallet {wallet.address} balance: {balance_eth} < threshold {self.config.native_balance_threshold}.")
+                if not is_alert_native:
+                    balance = self.w3.eth.get_balance(wallet.address)
+                    balance_eth = self.w3.from_wei(balance, 'ether')
 
-                    result = self.fund_gas(wallet, self.config.native_balance_threshold)
-                    logging.info(f"Funded wallet {wallet.address} with {self.config.native_balance_threshold} DERA. Tx hash: {result['tx_hash']}. Status: {result['status']}")
+                    if balance_eth < self.config.native_balance_threshold:
+                        logging.warning(f"Wallet {wallet.address} balance: {balance_eth} < threshold {self.config.native_balance_threshold}.")
 
-                balance_erc20 = self.erc20.functions.balanceOf(wallet.address).call()
-                balance_erc20_eth = self.w3.from_wei(balance_erc20, 'ether')
+                        result = self.fund_gas(wallet, self.config.native_balance_threshold)
+                        logging.info(f"Funded wallet {wallet.address} with {self.config.native_balance_threshold} DERA. Tx hash: {result['tx_hash']}. Status: {result['status']}")
 
-                if balance_erc20_eth < self.config.erc20_balance_threshold:
-                    logging.warning(f"Wallet {wallet.address} ERC20 balance: {balance_erc20_eth} < threshold {self.config.erc20_balance_threshold}.")
+                if not is_alert_erc20:
+                    balance_erc20 = self.erc20.functions.balanceOf(wallet.address).call()
+                    balance_erc20_eth = self.w3.from_wei(balance_erc20, 'ether')
 
-                    result = self.fund_erc20(wallet, self.config.erc20_balance_threshold)
-                    logging.info(f"Funded wallet {wallet.address} with {self.config.erc20_balance_threshold} ERC20 TOKEN. Tx hash: {result['tx_hash']}. Status: {result['status']}")
+                    if balance_erc20_eth < self.config.erc20_balance_threshold:
+                        logging.warning(f"Wallet {wallet.address} ERC20 balance: {balance_erc20_eth} < threshold {self.config.erc20_balance_threshold}.")
+
+                        result = self.fund_erc20(wallet, self.config.erc20_balance_threshold)
+                        logging.info(f"Funded wallet {wallet.address} with {self.config.erc20_balance_threshold} ERC20 TOKEN. Tx hash: {result['tx_hash']}. Status: {result['status']}")
             
             # operator fund
             operator_balance = self.w3.eth.get_balance(self.operator.address)
@@ -112,7 +115,7 @@ class Monitor(BaseExecutor):
                     next_alert_time_native = 0
                     backoff_factor_native = 0
 
-                    self.slack.send_message("Operator DERA-balance", f"Operator balance is back to normal")
+                    self.slack.send_message("Operator DERA-balance", f"Operator DERA balance is back to normal")
 
             # operator erc20 fund
             operator_balance_erc20 = self.erc20.functions.balanceOf(self.operator.address).call()
