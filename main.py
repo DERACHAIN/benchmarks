@@ -2,12 +2,14 @@ import os
 import json
 import logging
 import argparse
+import signal
+import sys
 
 from generator import WalletGenerator
 from executor import TransferExecutor, Bootstrapper
 from helpers import load_abi, SlackNotifier
-import signal
-import sys
+from config import Config
+from server import Server
 
 # Set up signal handler
 def signal_handler(sig, frame):
@@ -17,7 +19,8 @@ def signal_handler(sig, frame):
 if __name__ == "__main__":
     from dotenv import load_dotenv
     load_dotenv()
-    #logging.basicConfig(filename='logs.txt', level=logging.INFO, format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+
+    glb_config = Config()
     
     log_level = os.environ.get('LOG_LEVEL', 'INFO').upper()
     numerical_level = getattr(logging, log_level, logging.INFO)
@@ -26,6 +29,7 @@ if __name__ == "__main__":
     #signal.signal(signal.SIGINT, signal_handler)
 
     slack = SlackNotifier(os.environ.get('SLACK_WEBHOOK_URL')) if os.environ.get('SLACK_WEBHOOK_URL') else None
+    server = Server(glb_config)
     
     parser = argparse.ArgumentParser(description='Benchmark bot.')    
     parser.add_argument('-a', '--action', type=str, help="Actions: generate_wallets | bootstrap | transfer")
@@ -68,5 +72,12 @@ if __name__ == "__main__":
                                         slack)
             
             executor.execute({'amount_native': args.amount_native, 'amount_erc20': args.amount_erc20})
+
+    elif args.action == 'server':
+        server.run()
+
+    else:
+        logging.error(f"Unknown action: {args.action}")
+        sys.exit(1)
     
     logging.info(f"Action {args.action} completed")
