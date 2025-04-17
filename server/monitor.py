@@ -13,7 +13,7 @@ from helpers import SlackNotifier
 from executor import TransferExecutor, BaseExecutor
 from config import Config
 
-ALERT_BASE_INTERVAL = 5*60  # 5 mins
+ALERT_BASE_INTERVAL = 15*60  # 15 mins
 MONITOR_INTERVAL = 15
 
 class Monitor(BaseExecutor):
