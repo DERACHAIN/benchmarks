@@ -10,23 +10,18 @@ import signal
 import sys
 
 class TransferExecutor(BaseExecutor):
-    def __init__(self, rpc, operator_sk, erc20_address, erc721_address, erc20_abi, erc721_abi, wallets, slack=None):
+    def __init__(self, rpc, operator_sk, erc20_address, erc721_address, erc20_abi, erc721_abi, wallets):
         super().__init__(rpc, operator_sk)
-
-        self.w3 = Web3(Web3.HTTPProvider(rpc))
-        self.w3.middleware_onion.inject(ExtraDataToPOAMiddleware, layer=0)
 
         self.erc20 = self.w3.eth.contract(address=Web3.to_checksum_address(erc20_address), abi=erc20_abi)
         self.erc721 = self.w3.eth.contract(address=Web3.to_checksum_address(erc721_address), abi=erc721_abi)
 
         self.wallets = [self.create_wallet(wallet) for wallet in wallets]
 
-        self.slack = slack
-
     def create_wallet(self, wallet):
         return self.w3.eth.account.from_key(wallet['private_key'])
 
-    def execute(self, data):
+    def execute(self, amount_native, amount_erc20):
         import concurrent.futures
 
         def transfer(wallet, index, max_workers):
@@ -42,7 +37,7 @@ class TransferExecutor(BaseExecutor):
                     signed = self.w3.eth.account.sign_transaction({
                         'from': account.address,
                         'to': to.address,
-                        'value': self.w3.to_wei(data['amount_native'], 'ether'),
+                        'value': self.w3.to_wei(amount_native, 'ether'),
                         'gas': 23000,
                         'gasPrice': self.w3.to_wei('35', 'gwei'),
                         'nonce': self.w3.eth.get_transaction_count(account.address),
@@ -50,7 +45,7 @@ class TransferExecutor(BaseExecutor):
                     }, account._private_key)
 
                 if random_value == 2:
-                    tx = self.erc20.functions.transfer(to.address, self.w3.to_wei(data['amount_erc20'], 'ether')).build_transaction({
+                    tx = self.erc20.functions.transfer(to.address, self.w3.to_wei(amount_erc20, 'ether')).build_transaction({
                         'from': account.address,                    
                         'gas': 150000,
                         'gasPrice': self.w3.to_wei('35', 'gwei'),
@@ -77,7 +72,7 @@ class TransferExecutor(BaseExecutor):
                         "transfer_type": random_value,
                         "from": account.address,
                         "to": to.address,
-                        "amount": data['amount_native'] if random_value == 1 else data['amount_erc20'] if random_value == 2 else 1,
+                        "amount": amount_native if random_value == 1 else amount_erc20 if random_value == 2 else 1,
                         "tx_hash": tx_hash.hex(),
                         "status": tx_receipt['status'],
                     }
@@ -90,58 +85,39 @@ class TransferExecutor(BaseExecutor):
                     "transfer_type": random_value,
                     "from": account.address,
                     "to": to.address,
-                    "amount": data['amount_native'] if random_value == 1 else data['amount_erc20'] if random_value == 2 else 1,
+                    "amount": amount_native if random_value == 1 else amount_erc20 if random_value == 2 else 1,
                     "status": 0,
                 }
 
-        tx_number = 0
         max_workers = len(self.wallets)
+        number_success = 0
+        number_failed = 0
 
-        slack_title = "Bots activity"
         start_time = time.strftime('%Y-%m-%d %H:%M:%S', time.localtime())
         self.logger.warning(f"Transfer execution started at {start_time}")
 
-        try:
-            while True:
-                with concurrent.futures.ThreadPoolExecutor(max_workers=max_workers) as executor:
-                    start_time = time.strftime('%Y-%m-%d %H:%M:%S', time.localtime())
+        with concurrent.futures.ThreadPoolExecutor(max_workers=max_workers) as executor:
+            futures = [executor.submit(transfer, wallet, index, max_workers) for index, wallet in enumerate(self.wallets[:max_workers])]
 
-                    futures = [executor.submit(transfer, wallet, index, max_workers) for index, wallet in enumerate(self.wallets[:max_workers])]
+            for future in concurrent.futures.as_completed(futures):
+                try:
+                    result = future.result()
+                    self.logger.info(f"Transfer result: {result}")
 
-                    number_success = 0
-                    number_failed = 0
+                    if result['status'] == 1:
+                        number_success += 1
+                    else:
+                        raise Exception(f"Transaction failed {result}")
+                except Exception as e:
+                    self.logger.info(f"{e}")
+                    number_failed += 1                            
 
-                    for future in concurrent.futures.as_completed(futures):
-                        try:
-                            result = future.result()
-                            self.logger.info(f"Transfer result: {result}")
+            if number_failed > number_success:
+                self.logger.error(f"Number failed {number_failed} > number success {number_success}.")
+                                
+        elapsed_time = time.time() - time.mktime(time.strptime(start_time, '%Y-%m-%d %H:%M:%S'))
+        self.logger.warning(f"Total {max_workers} txs. Number success {number_success}. Number failed {number_failed}. Elapsed time: {elapsed_time:.3f} seconds")
 
-                            if result['status'] == 1:
-                                tx_number += 1
-                                number_success += 1
-                            else:
-                                raise Exception(f"Transaction failed {result}")
-                        except Exception as e:
-                            self.logger.info(f"{e}")
-                            number_failed += 1                            
-
-                    if number_failed > number_success:
-                        self.logger.error(f"Number failed {number_failed} > number success {number_success}. Exiting.")
-
-                        if self.slack:
-                            self.slack.send_message(slack_title, f"Number failed {number_failed} > number success {number_success}. Exiting. Total transactions: {tx_number}", is_success=False)
-                            
-                        sys.exit(1)
-                    
-                    elapsed_time = time.time() - time.mktime(time.strptime(start_time, '%Y-%m-%d %H:%M:%S'))
-                    self.logger.warning(f"Complete {tx_number} txs. Number success {number_success}. Number failed {number_failed}. Elapsed time: {elapsed_time:.3f} seconds")
-
-        except KeyboardInterrupt:
-            self.logger.warning(f"Transfer execution interrupted by user. Total transactions: {tx_number}")
-
-            if self.slack:
-                self.slack.send_message(slack_title, f"Transfer execution interrupted by user. Total transactions: {tx_number}")
-
-            sys.exit(0)
+        return number_success, number_failed
 
         
