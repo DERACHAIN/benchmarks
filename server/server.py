@@ -95,7 +95,7 @@ class Server(BaseExecutor):
             logging.warning(f"Execution server interrupted by user. Total transactions: {tx_number}")
 
             if self.slack:
-                self.slack.send_message(slack_title, f"Server execution interrupted by user. Total transactions: {tx_number}")
+                self.slack.send_message(slack_title, f"Execution server interrupted by user. Total transactions: {tx_number}")
 
             sys.exit(0)
         
@@ -103,10 +103,10 @@ class Server(BaseExecutor):
         logging.warning("Starting server...")
 
 
-        slack_title = "Execution"
+        slack_title = "Server"
         start_time = time.strftime('%Y-%m-%d %H:%M:%S', time.localtime())
-        logging.warning(f"Execution server started at {start_time}")
-        self.slack.send_message(slack_title, f"Execution server started at {start_time}")
+        logging.warning(f"Benchmarks server started at {start_time}")
+        self.slack.send_message(slack_title, f"Benchmarks server started at {start_time}")
 
         asyncio.run(self.execute(amount_native, amount_erc20))
 
