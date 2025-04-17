@@ -66,81 +66,90 @@ class Monitor(BaseExecutor):
         next_alert_time_erc20 = 0
         backoff_factor_erc20 = 0
 
-        while True:
-            # wallets fund
-            for wallet in self.wallets:
+        try:
+            while True:
+                # wallets fund
+                for wallet in self.wallets:
 
-                if not is_alert_native:
-                    balance = self.w3.eth.get_balance(wallet.address)
-                    balance_eth = self.w3.from_wei(balance, 'ether')
+                    if not is_alert_native:
+                        balance = self.w3.eth.get_balance(wallet.address)
+                        balance_eth = self.w3.from_wei(balance, 'ether')
 
-                    if balance_eth < self.config.native_balance_threshold:
-                        logging.warning(f"Wallet {wallet.address} balance: {balance_eth} < threshold {self.config.native_balance_threshold}.")
+                        if balance_eth < self.config.native_balance_threshold:
+                            logging.warning(f"Wallet {wallet.address} balance: {balance_eth} < threshold {self.config.native_balance_threshold}.")
 
-                        result = self.fund_gas(wallet, self.config.native_balance_threshold)
-                        logging.info(f"Funded wallet {wallet.address} with {self.config.native_balance_threshold} DERA. Tx hash: {result['tx_hash']}. Status: {result['status']}")
+                            result = self.fund_gas(wallet, self.config.native_balance_threshold)
+                            logging.info(f"Funded wallet {wallet.address} with {self.config.native_balance_threshold} DERA. Tx hash: {result['tx_hash']}. Status: {result['status']}")
 
-                if not is_alert_erc20:
-                    balance_erc20 = self.erc20.functions.balanceOf(wallet.address).call()
-                    balance_erc20_eth = self.w3.from_wei(balance_erc20, 'ether')
+                    if not is_alert_erc20:
+                        balance_erc20 = self.erc20.functions.balanceOf(wallet.address).call()
+                        balance_erc20_eth = self.w3.from_wei(balance_erc20, 'ether')
 
-                    if balance_erc20_eth < self.config.erc20_balance_threshold:
-                        logging.warning(f"Wallet {wallet.address} ERC20 balance: {balance_erc20_eth} < threshold {self.config.erc20_balance_threshold}.")
+                        if balance_erc20_eth < self.config.erc20_balance_threshold:
+                            logging.warning(f"Wallet {wallet.address} ERC20 balance: {balance_erc20_eth} < threshold {self.config.erc20_balance_threshold}.")
 
-                        result = self.fund_erc20(wallet, self.config.erc20_balance_threshold)
-                        logging.info(f"Funded wallet {wallet.address} with {self.config.erc20_balance_threshold} ERC20 TOKEN. Tx hash: {result['tx_hash']}. Status: {result['status']}")
-            
-            # operator fund
-            operator_balance = self.w3.eth.get_balance(self.operator.address)
-            operator_balance_eth = self.w3.from_wei(operator_balance, 'ether')
+                            result = self.fund_erc20(wallet, self.config.erc20_balance_threshold)
+                            logging.info(f"Funded wallet {wallet.address} with {self.config.erc20_balance_threshold} ERC20 TOKEN. Tx hash: {result['tx_hash']}. Status: {result['status']}")
+                
+                # operator fund
+                operator_balance = self.w3.eth.get_balance(self.operator.address)
+                operator_balance_eth = self.w3.from_wei(operator_balance, 'ether')
 
-            if operator_balance_eth < self.config.native_balance_threshold * len(self.wallets):
+                if operator_balance_eth < self.config.native_balance_threshold * len(self.wallets):
 
-                if not is_alert_native:
-                    is_alert_native = True
-                    next_alert_time_native = time.time() + ALERT_BASE_INTERVAL
+                    if not is_alert_native:
+                        is_alert_native = True
+                        next_alert_time_native = time.time() + ALERT_BASE_INTERVAL
 
-                    self.slack.send_message("Operator DERA-balance", f"Operator balance: {operator_balance_eth} < threshold {self.config.native_balance_threshold * len(self.wallets)} DERA. Should be funded prompty.", is_success=False)
+                        self.slack.send_message("Operator DERA-balance", f"Operator balance: {operator_balance_eth} < threshold {self.config.native_balance_threshold * len(self.wallets)} DERA. Should be funded prompty.", is_success=False)
 
-                elif time.time() > next_alert_time_native:
-                    backoff_factor_native += 1
-                    next_alert_time_native = time.time() + ALERT_BASE_INTERVAL * (2**backoff_factor_native)
+                    elif time.time() > next_alert_time_native:
+                        backoff_factor_native += 1
+                        next_alert_time_native = time.time() + ALERT_BASE_INTERVAL * (2**backoff_factor_native)
 
-                    self.slack.send_message("Operator DERA-balance", f"Operator balance: {operator_balance_eth} < threshold {self.config.native_balance_threshold * len(self.wallets)} DERA. Should be funded prompty.", is_success=False)
+                        self.slack.send_message("Operator DERA-balance", f"Operator balance: {operator_balance_eth} < threshold {self.config.native_balance_threshold * len(self.wallets)} DERA. Should be funded prompty.", is_success=False)
 
-                logging.warning(f"Operator {self.operator.address} balance: {operator_balance_eth} < threshold {self.config.native_balance_threshold * len(self.wallets)}. Next time alert at {time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(next_alert_time_native))}")
-            else:
-                if is_alert_native:
-                    is_alert_native = False
-                    next_alert_time_native = 0
-                    backoff_factor_native = 0
+                    logging.warning(f"Operator {self.operator.address} balance: {operator_balance_eth} < threshold {self.config.native_balance_threshold * len(self.wallets)}. Next time alert at {time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(next_alert_time_native))}")
+                else:
+                    if is_alert_native:
+                        is_alert_native = False
+                        next_alert_time_native = 0
+                        backoff_factor_native = 0
 
-                    self.slack.send_message("Operator DERA-balance", f"Operator DERA balance is back to normal")
+                        self.slack.send_message("Operator DERA-balance", f"Operator DERA balance is back to normal")
 
-            # operator erc20 fund
-            operator_balance_erc20 = self.erc20.functions.balanceOf(self.operator.address).call()
-            operator_balance_erc20_eth = self.w3.from_wei(operator_balance_erc20, 'ether')
+                # operator erc20 fund
+                operator_balance_erc20 = self.erc20.functions.balanceOf(self.operator.address).call()
+                operator_balance_erc20_eth = self.w3.from_wei(operator_balance_erc20, 'ether')
 
-            if operator_balance_erc20_eth < self.config.erc20_balance_threshold * len(self.wallets):
-                if not is_alert_erc20:
-                    is_alert_erc20 = True
-                    next_alert_time_erc20 = time.time() + ALERT_BASE_INTERVAL
+                if operator_balance_erc20_eth < self.config.erc20_balance_threshold * len(self.wallets):
+                    if not is_alert_erc20:
+                        is_alert_erc20 = True
+                        next_alert_time_erc20 = time.time() + ALERT_BASE_INTERVAL
 
-                    self.slack.send_message("Operator ERC20-balance", f"Operator ERC20 balance: {operator_balance_erc20_eth} < threshold {self.config.erc20_balance_threshold * len(self.wallets)} ERC20. Should be funded prompty.", is_success=False)
+                        self.slack.send_message("Operator ERC20-balance", f"Operator ERC20 balance: {operator_balance_erc20_eth} < threshold {self.config.erc20_balance_threshold * len(self.wallets)} ERC20. Should be funded prompty.", is_success=False)
 
-                elif time.time() > next_alert_time_erc20:
-                    backoff_factor_erc20 += 1
-                    next_alert_time_erc20 = time.time() + ALERT_BASE_INTERVAL * (2**backoff_factor_erc20)
+                    elif time.time() > next_alert_time_erc20:
+                        backoff_factor_erc20 += 1
+                        next_alert_time_erc20 = time.time() + ALERT_BASE_INTERVAL * (2**backoff_factor_erc20)
 
-                    self.slack.send_message("Operator ERC20-balance", f"Operator ERC20 balance: {operator_balance_erc20_eth} < threshold {self.config.erc20_balance_threshold * len(self.wallets)} ERC20. Should be funded prompty.", is_success=False)
+                        self.slack.send_message("Operator ERC20-balance", f"Operator ERC20 balance: {operator_balance_erc20_eth} < threshold {self.config.erc20_balance_threshold * len(self.wallets)} ERC20. Should be funded prompty.", is_success=False)
 
-                logging.warning(f"Operator {self.operator.address} ERC20 balance: {operator_balance_erc20_eth} < threshold {self.config.erc20_balance_threshold * len(self.wallets)}. Next time alert at {time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(next_alert_time_erc20))}")
-            else:
-                if is_alert_erc20:
-                    is_alert_erc20 = False
-                    next_alert_time_erc20 = 0
-                    backoff_factor_erc20 = 0
+                    logging.warning(f"Operator {self.operator.address} ERC20 balance: {operator_balance_erc20_eth} < threshold {self.config.erc20_balance_threshold * len(self.wallets)}. Next time alert at {time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(next_alert_time_erc20))}")
+                else:
+                    if is_alert_erc20:
+                        is_alert_erc20 = False
+                        next_alert_time_erc20 = 0
+                        backoff_factor_erc20 = 0
 
-                    self.slack.send_message("Operator ERC20-balance", f"Operator ERC20 balance is back to normal")                
+                        self.slack.send_message("Operator ERC20-balance", f"Operator ERC20 balance is back to normal")                
 
-            time.sleep(MONITOR_INTERVAL)
+                time.sleep(MONITOR_INTERVAL)
+
+        except KeyboardInterrupt:
+            logging.warning("Monitor interrupted by user")
+
+            if self.slack:
+                self.slack.send_message("Monitor", "Monitor server interrupted by user")
+
+            sys.exit(0)
