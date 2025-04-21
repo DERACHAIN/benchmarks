@@ -1,6 +1,8 @@
 import requests
 import json
+import logging
 from library import Singleton
+
 
 class SlackNotifier(metaclass=Singleton):
     def __init__(self, webhook_url):
@@ -21,5 +23,5 @@ class SlackNotifier(metaclass=Singleton):
         response = requests.post(self.webhook_url, data=json.dumps(payload), headers={'Content-Type': 'application/json'})
         
         if response.status_code != 200:
-            raise ValueError(f"Request to Slack returned an error {response.status_code}, the response is:\n{response.text}")
+            logging.warning(f"Request to Slack returned an error {response.status_code}, the response is:\n{response.text}")
 
