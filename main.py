@@ -19,7 +19,7 @@ def signal_handler(sig, frame):
 
 def monitor_process(wallets, config: Config):
     # set process group the same as main process
-    os.setpgid(0, os.getppid())
+    os.setpgid(0, 0)
 
     numerical_level = getattr(logging, config.log_level, logging.INFO)
     logging.basicConfig(level=numerical_level, format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
