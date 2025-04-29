@@ -46,7 +46,7 @@ if __name__ == "__main__":
     parser.add_argument('-t', '--type', type=str, help="Actions: native | erc20", default='native')
     parser.add_argument('-b', '--balance', type=float, help="Initial balance of wallets", default=10)
     parser.add_argument('-n', '--number', type=int, help="Number of wallets", default=100)
-    parser.add_argument('--amount-native', type=float, help="Amount native", default=0.1)
+    parser.add_argument('--amount-native', type=float, help="Amount native", default=1)
     parser.add_argument('--amount-erc20', type=float, help="Amount ERC20", default=10)
 
     args = parser.parse_args()
