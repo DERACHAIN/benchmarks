@@ -20,14 +20,6 @@ class Server(BaseExecutor):
     def __init__(self, wallets, config: Config):
         super().__init__(config.rpc, config.operator_sk)
 
-        #self.config = config
-
-        #self.w3 = Web3(Web3.HTTPProvider(config.rpc))
-        #self.operator = self.w3.eth.account.from_key(config.operator_sk)
-        #self.w3.middleware_onion.inject(ExtraDataToPOAMiddleware, layer=0)
-        #self.w3.middleware_onion.inject(SignAndSendRawMiddlewareBuilder.build(self.operator), layer=0)
-        #self.w3.eth.default_account = self.operator.address
-
         self.slack = SlackNotifier(config.slack_webhook_url) if config.slack_webhook_url else None
 
         self.executor = TransferExecutor(
@@ -40,9 +32,6 @@ class Server(BaseExecutor):
             wallets,
             config.max_workers,
         )
-
-        # self.wallets = [self.w3.eth.account.from_key(wallet['private_key']) for wallet in wallets]
-        # self.erc20 = self.w3.eth.contract(address=Web3.to_checksum_address(config.erc20_address), abi=config.erc20_abi)
 
         self.max_workers = config.max_workers
 
@@ -97,7 +86,7 @@ class Server(BaseExecutor):
                     elapsed_time = time.time() - time.mktime(time.strptime(start_time, '%Y-%m-%d %H:%M:%S'))
                     logging.warning(f"Total {tx_number} txs. Number success {number_success}. Number failed {number_failed}. Elapsed time: {elapsed_time:.3f} seconds")
 
-                start_index = start_index + 1 if start_index * self.max_workers < len(self.executor.wallets)-1 else 0
+                start_index = start_index + 1 if (start_index + 1) * self.max_workers < len(self.executor.wallets)-1 else 0
 
         except KeyboardInterrupt:
             logging.warning(f"Execution server interrupted by user. Total transactions: {tx_number}")

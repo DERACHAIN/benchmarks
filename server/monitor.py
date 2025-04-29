@@ -38,7 +38,7 @@ class Monitor(BaseExecutor):
 
             receipt = self.w3.eth.wait_for_transaction_receipt(tx)
 
-            return {'tx_hash': tx, 'status': receipt.status}        
+            return {'tx_hash': tx.hex(), 'status': receipt.status}        
         except Exception as e:
             logging.warning(f"Error funding gas: {e}")
             return {'tx_hash': '', 'status': 0}
@@ -49,7 +49,7 @@ class Monitor(BaseExecutor):
 
             receipt = self.w3.eth.wait_for_transaction_receipt(tx)
 
-            return {'tx_hash': tx, 'status': receipt.status}        
+            return {'tx_hash': tx.hex(), 'status': receipt.status}        
         except Exception as e:
             logging.warning(f"Error funding ERC20: {e}")
             return {'tx_hash': '', 'status': 0}

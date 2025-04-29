@@ -19,7 +19,7 @@ def signal_handler(sig, frame):
 
 def monitor_process(wallets, config: Config):
     # set process group the same as main process
-    os.setpgid(0, 0)
+    #os.setpgid(0, 0)
 
     numerical_level = getattr(logging, config.log_level, logging.INFO)
     logging.basicConfig(level=numerical_level, format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
@@ -98,7 +98,7 @@ if __name__ == "__main__":
             wallet_numbers = int(args.number) if args.number < len(wallets) and args.number > 0 else len(wallets)
 
             # set process group
-            os.setpgid(0, 0)
+            #os.setpgid(0, 0)
 
             # spawn monitoring process
             monitor = multiprocessing.Process(target=monitor_process, args=(wallets[:wallet_numbers], glb_config))
