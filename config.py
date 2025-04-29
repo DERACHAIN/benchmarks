@@ -14,3 +14,4 @@ class Config(metaclass=Singleton):
         self.slack_webhook_url = os.environ.get('SLACK_WEBHOOK_URL')
         self.native_balance_threshold = float(os.environ.get('NATIVE_BALANCE_THRESHOLD', 10))
         self.erc20_balance_threshold = float(os.environ.get('ERC20_BALANCE_THRESHOLD', 100))
+        self.max_workers = int(os.environ.get('MAX_WORKERS', 10))

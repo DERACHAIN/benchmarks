@@ -10,23 +10,24 @@ import signal
 import sys
 
 class TransferExecutor(BaseExecutor):
-    def __init__(self, rpc, operator_sk, erc20_address, erc721_address, erc20_abi, erc721_abi, wallets):
+    def __init__(self, rpc, operator_sk, erc20_address, erc721_address, erc20_abi, erc721_abi, wallets, max_workers=10):
         super().__init__(rpc, operator_sk)
 
         self.erc20 = self.w3.eth.contract(address=Web3.to_checksum_address(erc20_address), abi=erc20_abi)
         self.erc721 = self.w3.eth.contract(address=Web3.to_checksum_address(erc721_address), abi=erc721_abi)
 
         self.wallets = [self.create_wallet(wallet) for wallet in wallets]
+        self.max_workers = max_workers
 
     def create_wallet(self, wallet):
         return self.w3.eth.account.from_key(wallet['private_key'])
 
-    def execute(self, amount_native, amount_erc20):
+    def execute(self, amount_native, amount_erc20, start_index=0):
         import concurrent.futures
 
-        def transfer(wallet, index, max_workers):
+        def transfer(wallet, index):
             account = wallet
-            to = self.wallets[:max_workers][(index + 1) % max_workers]
+            to = self.wallets[(index + 1) % len(self.wallets)]
         
             random_value = random.randint(1, 3)
             #self.logger.info(f"Random value: {random_value}")
@@ -89,15 +90,17 @@ class TransferExecutor(BaseExecutor):
                     "status": 0,
                 }
 
-        max_workers = len(self.wallets)
         number_success = 0
         number_failed = 0
 
         start_time = time.strftime('%Y-%m-%d %H:%M:%S', time.localtime())
-        self.logger.warning(f"Transfer execution started at {start_time}")
+        self.logger.warning(f"Transfer execution started at {start_time}")        
 
-        with concurrent.futures.ThreadPoolExecutor(max_workers=max_workers) as executor:
-            futures = [executor.submit(transfer, wallet, index, max_workers) for index, wallet in enumerate(self.wallets[:max_workers])]
+        with concurrent.futures.ThreadPoolExecutor(max_workers=self.max_workers) as executor:
+            from_index = start_index if start_index < len(self.wallets)-1 else 0
+            to_index = from_index + self.max_workers if from_index + self.max_workers < len(self.wallets)-1 else len(self.wallets)-1
+
+            futures = [executor.submit(transfer, wallet, index) for index, wallet in enumerate(self.wallets[from_index:to_index])]
 
             for future in concurrent.futures.as_completed(futures):
                 try:
@@ -116,7 +119,7 @@ class TransferExecutor(BaseExecutor):
                 self.logger.error(f"Number failed {number_failed} > number success {number_success}.")
                                 
         elapsed_time = time.time() - time.mktime(time.strptime(start_time, '%Y-%m-%d %H:%M:%S'))
-        self.logger.warning(f"Total {max_workers} txs. Number success {number_success}. Number failed {number_failed}. Elapsed time: {elapsed_time:.3f} seconds")
+        self.logger.warning(f"Total {self.max_workers} txs. Number success {number_success}. Number failed {number_failed}. Elapsed time: {elapsed_time:.3f} seconds")
 
         return number_success, number_failed
 

@@ -20,14 +20,6 @@ class Server(BaseExecutor):
     def __init__(self, wallets, config: Config):
         super().__init__(config.rpc, config.operator_sk)
 
-        self.config = config
-
-        self.w3 = Web3(Web3.HTTPProvider(config.rpc))
-        self.operator = self.w3.eth.account.from_key(config.operator_sk)
-        self.w3.middleware_onion.inject(ExtraDataToPOAMiddleware, layer=0)
-        self.w3.middleware_onion.inject(SignAndSendRawMiddlewareBuilder.build(self.operator), layer=0)
-        self.w3.eth.default_account = self.operator.address
-
         self.slack = SlackNotifier(config.slack_webhook_url) if config.slack_webhook_url else None
 
         self.executor = TransferExecutor(
@@ -38,10 +30,10 @@ class Server(BaseExecutor):
             config.erc20_abi,
             config.erc721_abi,
             wallets,
+            config.max_workers,
         )
 
-        self.wallets = [self.w3.eth.account.from_key(wallet['private_key']) for wallet in wallets]
-        self.erc20 = self.w3.eth.contract(address=Web3.to_checksum_address(config.erc20_address), abi=config.erc20_abi)
+        self.max_workers = config.max_workers
 
 
     async def execute(self, amount_native, amount_erc20):
@@ -54,12 +46,15 @@ class Server(BaseExecutor):
         is_alert = False
         next_alert_time = 0
 
+        start_index = 0
+
         try:
             while True:
                 start_time = time.strftime('%Y-%m-%d %H:%M:%S', time.localtime())
                 logging.warning(f"Transfer execution started at {start_time}")
 
-                number_success, number_failed = self.executor.execute(amount_native, amount_erc20)
+                logging.warning(f"Start index {start_index}")
+                number_success, number_failed = self.executor.execute(amount_native, amount_erc20, start_index * self.max_workers)
                 tx_number += number_success
 
                 if number_failed > number_success:
@@ -91,6 +86,8 @@ class Server(BaseExecutor):
                     elapsed_time = time.time() - time.mktime(time.strptime(start_time, '%Y-%m-%d %H:%M:%S'))
                     logging.warning(f"Total {tx_number} txs. Number success {number_success}. Number failed {number_failed}. Elapsed time: {elapsed_time:.3f} seconds")
 
+                start_index = start_index + 1 if (start_index + 1) * self.max_workers < len(self.executor.wallets)-1 else 0
+
         except KeyboardInterrupt:
             logging.warning(f"Execution server interrupted by user. Total transactions: {tx_number}")
 
@@ -109,4 +106,3 @@ class Server(BaseExecutor):
         self.slack.send_message(slack_title, f"Benchmarks server started at {start_time}")
 
         asyncio.run(self.execute(amount_native, amount_erc20))
-

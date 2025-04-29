@@ -19,7 +19,7 @@ def signal_handler(sig, frame):
 
 def monitor_process(wallets, config: Config):
     # set process group the same as main process
-    os.setpgid(0, os.getppid())
+    #os.setpgid(0, 0)
 
     numerical_level = getattr(logging, config.log_level, logging.INFO)
     logging.basicConfig(level=numerical_level, format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
@@ -46,7 +46,7 @@ if __name__ == "__main__":
     parser.add_argument('-t', '--type', type=str, help="Actions: native | erc20", default='native')
     parser.add_argument('-b', '--balance', type=float, help="Initial balance of wallets", default=10)
     parser.add_argument('-n', '--number', type=int, help="Number of wallets", default=100)
-    parser.add_argument('--amount-native', type=float, help="Amount native", default=0.1)
+    parser.add_argument('--amount-native', type=float, help="Amount native", default=1)
     parser.add_argument('--amount-erc20', type=float, help="Amount ERC20", default=10)
 
     args = parser.parse_args()
@@ -98,7 +98,7 @@ if __name__ == "__main__":
             wallet_numbers = int(args.number) if args.number < len(wallets) and args.number > 0 else len(wallets)
 
             # set process group
-            os.setpgid(0, 0)
+            #os.setpgid(0, 0)
 
             # spawn monitoring process
             monitor = multiprocessing.Process(target=monitor_process, args=(wallets[:wallet_numbers], glb_config))
