@@ -51,9 +51,8 @@ class Server(BaseExecutor):
         try:
             while True:
                 start_time = time.strftime('%Y-%m-%d %H:%M:%S', time.localtime())
-                logging.warning(f"Transfer execution started at {start_time}")
+                logging.warning(f"Transfer execution started at {start_time} with {self.max_workers} workers and process wallets #{start_index * self.max_workers} to #{(start_index +1) * self.max_workers}")
 
-                logging.warning(f"Start index {start_index}")
                 number_success, number_failed = self.executor.execute(amount_native, amount_erc20, start_index * self.max_workers)
                 tx_number += number_success
 
