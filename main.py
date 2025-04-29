@@ -18,7 +18,8 @@ def signal_handler(sig, frame):
     sys.exit(0)
 
 def monitor_process(wallets, config: Config):
-    # set process group the same as main process
+    # @deprecated set process group the same as main process
+    # the process group has already been managed by supervisord
     #os.setpgid(0, 0)
 
     numerical_level = getattr(logging, config.log_level, logging.INFO)
@@ -95,17 +96,16 @@ if __name__ == "__main__":
                 logging.error("No wallets found in wallets.json")
                 sys.exit(1)
 
-            wallet_numbers = int(args.number) if args.number < len(wallets) and args.number > 0 else len(wallets)
-
-            # set process group
+            # @deprecated set process group
+            # the process group has already been managed by supervisord
             #os.setpgid(0, 0)
 
             # spawn monitoring process
-            monitor = multiprocessing.Process(target=monitor_process, args=(wallets[:wallet_numbers], glb_config))
+            monitor = multiprocessing.Process(target=monitor_process, args=(wallets, glb_config))
             monitor.start()
             logging.warning(f"Monitoring process started with PID {monitor.pid}")
             
-            server = Server(wallets[:wallet_numbers], glb_config)            
+            server = Server(wallets, glb_config)
             server.run()
 
     else:
