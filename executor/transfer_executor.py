@@ -97,8 +97,8 @@ class TransferExecutor(BaseExecutor):
         self.logger.warning(f"Transfer execution started at {start_time}")        
 
         with concurrent.futures.ThreadPoolExecutor(max_workers=self.max_workers) as executor:
-            from_index = start_index if start_index < len(self.wallets)-1 else 0
-            to_index = from_index + self.max_workers if from_index + self.max_workers < len(self.wallets)-1 else len(self.wallets)-1
+            from_index = start_index if start_index < len(self.wallets) else 0
+            to_index = from_index + self.max_workers if from_index + self.max_workers < len(self.wallets) else len(self.wallets)
 
             futures = [executor.submit(transfer, wallet, index) for index, wallet in enumerate(self.wallets[from_index:to_index])]
 
@@ -113,8 +113,8 @@ class TransferExecutor(BaseExecutor):
                         raise Exception(f"Transaction failed {result}")
                 except Exception as e:
                     self.logger.info(f"{e}")
-                    number_failed += 1                            
-
+                    number_failed += 1
+            
             if number_failed > number_success:
                 self.logger.error(f"Number failed {number_failed} > number success {number_success}.")
                                 

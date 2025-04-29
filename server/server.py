@@ -86,7 +86,7 @@ class Server(BaseExecutor):
                     elapsed_time = time.time() - time.mktime(time.strptime(start_time, '%Y-%m-%d %H:%M:%S'))
                     logging.warning(f"Total {tx_number} txs. Number success {number_success}. Number failed {number_failed}. Elapsed time: {elapsed_time:.3f} seconds")
 
-                start_index = start_index + 1 if (start_index + 1) * self.max_workers < len(self.executor.wallets)-1 else 0
+                start_index = start_index + 1 if (start_index + 1) * self.max_workers < len(self.executor.wallets) else 0
 
         except KeyboardInterrupt:
             logging.warning(f"Execution server interrupted by user. Total transactions: {tx_number}")
