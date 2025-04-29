@@ -74,8 +74,6 @@ if __name__ == "__main__":
             if len(wallets) == 0:
                 logging.error("No wallets found in wallets.json")
                 sys.exit(1)
-
-            wallet_numbers = int(args.number) if args.number < len(wallets) and args.number > 0 else len(wallets)
                 
             executor = TransferExecutor(os.environ.get('RPC_ENDPOINT'),
                                         os.environ.get('PRIVATE_KEY'),
@@ -83,7 +81,7 @@ if __name__ == "__main__":
                                         os.environ.get('ERC721_ADDRESS'),
                                         load_abi(f"{os.path.dirname(__file__)}/abis/erc20.json"),
                                         load_abi(f"{os.path.dirname(__file__)}/abis/erc721.json"),
-                                        wallets[:wallet_numbers],
+                                        wallets,
                                         )
             
             executor.execute(args.amount_native, args.amount_erc20)
